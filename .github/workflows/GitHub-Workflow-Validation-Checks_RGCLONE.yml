@@ -6,11 +6,8 @@ on:
     branches:
       - release  # Triggers on PRs to release
       - 'feature/*'  # Triggers on PRs to any feature branch
-    branches-ignore:
-      - main  # Ensures it NEVER triggers on main
-
-  schedule:
-    - cron: "0 3 * * *"  # Runs at 3 AM UTC
+  #schedule:
+    #- cron: "0 3 * * *"  # Runs at 3 AM UTC
     
 jobs:
   setup-validation-environment:
