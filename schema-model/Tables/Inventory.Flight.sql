@@ -10,7 +10,6 @@ CREATE TABLE [Inventory].[Flight]
 [AvailableSeats] [int] NOT NULL,
 [Test] [int] NOT NULL
 )
-)
 GO
 ALTER TABLE [Inventory].[Flight] ADD PRIMARY KEY CLUSTERED ([FlightID])
 GO
