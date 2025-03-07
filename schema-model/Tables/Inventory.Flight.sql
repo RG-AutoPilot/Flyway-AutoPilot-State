@@ -7,7 +7,9 @@ CREATE TABLE [Inventory].[Flight]
 [DepartureTime] [datetime] NOT NULL,
 [ArrivalTime] [datetime] NOT NULL,
 [Price] [decimal] (10, 2) NOT NULL,
-[AvailableSeats] [int] NOT NULL
+[AvailableSeats] [int] NOT NULL,
+[Test] [int] NOT NULL
+)
 )
 GO
 ALTER TABLE [Inventory].[Flight] ADD PRIMARY KEY CLUSTERED ([FlightID])
