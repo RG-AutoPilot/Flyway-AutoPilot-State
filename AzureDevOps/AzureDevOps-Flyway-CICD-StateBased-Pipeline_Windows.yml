@@ -1,5 +1,13 @@
 # This is a best practice Flyway Enterprise workflow to help you get started with Azure DevOps and a Windows Runner
 
+# ===========================
+# Pipeline Name: AzureDevOps-Flyway-CICD-StateBased-Pipeline_Windows.yml
+# Version: 1.0.0
+# Author: Redgate Software Ltd
+# Last Updated: 2025-03-17
+# Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Linux Runners
+# ===========================
+
 name: Flyway-AutoPilot-Simple-State-Pipeline-Windows
 
 # Uncomment and remove the word 'none' to enable triggers on specific branches or paths:
