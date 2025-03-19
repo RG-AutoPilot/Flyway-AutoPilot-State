@@ -2,9 +2,10 @@
 
 # ===========================
 # Pipeline Name: AzureDevOps-Flyway-CICD-StateBased-Pipeline_Linux.yml
-# Version: 1.0.0
+# Version: 1.0.1
 # Author: Redgate Software Ltd
-# Last Updated: 2025-03-17
+# Last Updated: 2025-03-19
+# Last Update Notes: Added CLI Verb chaining to build task
 # Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Linux Runners
 # ===========================
 
@@ -126,60 +127,26 @@ stages:
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
-        # Step 2 - Prepare: Detect differences and create deployment script
+        # Step 2 - Prepare & Deploy: Detect differences > Create deployment script > Deploy script to target (If any found)
+        # Tip - Notice the CLI Verb chaining. This command uses 'prepare' and 'deploy' together to streamline the deployment task.
         - script: |
-            # Run Flyway prepare command and capture output
-            echo "Flyway CLI - Detecting differences between $(SOURCE_ENVIRONMENT) and $(TARGET_ENVIRONMENT)"
-              flywayDiffs=$(flyway prepare \
+            echo "Flyway CLI - Detecting & deploying differences between $(SOURCE_ENVIRONMENT) and $(TARGET_ENVIRONMENT)"
+                flyway prepare deploy \
                 -prepare.source="$(SOURCE_ENVIRONMENT)" \
                 -prepare.target="$(TARGET_ENVIRONMENT)" \
-                -environments.Build.user="$(TARGET_DATABASE_USERNAME)" \
-                -environments.Build.password="$(TARGET_DATABASE_PASSWORD)" \
-                -prepare.scriptFilename="$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
-                -prepare.force="true" \
-                -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
-                -schemaModelLocation="$(WORKING_DIRECTORY)/schema-model" \
-                 $(CUSTOM_PARAMETERS) 2>&1)
-
-              # Capture exit code
-              EXIT_CODE=$?
-
-              # Display output in console
-              echo "$flywayDiffs"
-
-              # Check if the prepare command succeeded and handle logic accordingly
-              if [[ $EXIT_CODE -eq 0 && "$flywayDiffs" == *"no differences detected"* ]]; then
-                echo "No changes to generate. Exiting script gracefully."
-                echo "##vso[task.setvariable variable=CHANGES_DETECTED]false"
-                exit 0  # Graceful exit
-              elif [[ $EXIT_CODE -eq 0 ]]; then
-                echo "Changes detected. Proceeding with further steps."
-                echo "##vso[task.setvariable variable=CHANGES_DETECTED]true"
-              else
-                echo "Error: The flyway prepare command failed. Exiting script with error."
-                exit 1  # Exit with error
-              fi
-          continueOnError: false
-          workingDirectory: '$(WORKING_DIRECTORY)'
-          displayName: 'Flyway CLI - Prepare Scripts'
-          condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
-          env:
-            FLYWAY_CLEAN_DISABLED: false # This should only be disabled for temporary sandbox databases, like Build
-        # Step 3 - Deploy: Deploy changes to target environment
-        - task: Bash@3
-          displayName: 'Flyway CLI - Deploy Changes'
-          condition: and(succeeded(), eq(variables['CHANGES_DETECTED'], 'true'), eq(variables['EXECUTE_BUILD'], 'true'))
-          inputs:
-            targetType: 'inline'
-            script: |
-              echo "Flyway CLI - Deploying differences to: $(TARGET_ENVIRONMENT)"
-              flyway deploy \
                 -environment="$(TARGET_ENVIRONMENT)" \
                 -environments.Build.user="$(TARGET_DATABASE_USERNAME)" \
                 -environments.Build.password="$(TARGET_DATABASE_PASSWORD)" \
+                -prepare.scriptFilename="$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
                 -deploy.scriptFilename="$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
-                $(CUSTOM_PARAMETERS)
-
+                -prepare.force="true" \
+                -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
+                -schemaModelLocation="$(WORKING_DIRECTORY)/schema-model" \
+                 $(CUSTOM_PARAMETERS)
+          continueOnError: false
+          workingDirectory: '$(WORKING_DIRECTORY)'
+          displayName: 'Flyway CLI - Prepare and Deploy'
+          condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
         # ADO - Copy in-scope build files to artifact directory 
         - task: CopyFiles@2
           condition: succeeded()
@@ -198,7 +165,8 @@ stages:
               **/Filter.scpf
             TargetFolder: '$(System.ArtifactsDirectory)'
         # ADO - Publish Artifact Directory
-        - task: PublishBuildArtifacts@1 # This step publishes all the validated Flyway Project files as a build artifact
+        # This step publishes all the validated Flyway Project files as a build artifact
+        - task: PublishBuildArtifacts@1
           condition: succeeded()
           continueOnError: true
           displayName: 'Publish Build Artifact'

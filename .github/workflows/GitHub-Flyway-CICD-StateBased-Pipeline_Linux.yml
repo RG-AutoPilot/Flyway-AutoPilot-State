@@ -1,4 +1,13 @@
 # This is a basic workflow to help you get started with Actions
+
+# ===========================
+# Pipeline Name: GitHub-Flyway-CICD-StateBased-Pipeline_Linux.yml
+# Version: 1.0.1
+# Author: Redgate Software Ltd
+# Last Updated: 2025-03-19
+# Last Update Notes: Added CLI Verb chaining to build task
+# Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Linux Runners
+# ===========================
  
 name: GitHub-Autopilot-Simple-State-Pipeline-Linux
 
@@ -79,59 +88,25 @@ jobs:
         if: ${{ env.EXECUTE_BUILD == 'true' && env.FLYWAY_AUTH_DISABLED != 'true' && success() }}
         run: |
          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
-      # Step 2 - Prepare: Detect differences and create deployment script
-      - name: Flyway CLI - Prepare Scripts
+         
+      # Step 2 - Prepare & Deploy: Detect differences > Create deployment script > Deploy script to target (If any found)
+      # Tip - Notice the CLI Verb chaining. This command uses 'prepare' and 'deploy' together to streamline the deployment task.
+      - name: Flyway CLI - Prepare and Deploy
         if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
-              # Run Flyway prepare command and capture output
               echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
-              flywayDiffs=$(flyway prepare \
+              flyway prepare deploy \
               -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
               -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+              -environment="${{ env.TARGET_ENVIRONMENT }}" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
               -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+              -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
               -prepare.force="true" \
               -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
               -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
-              ${{ env.CUSTOM_PARAMS }}) || {
-              echo 'Flyway CLI - Diff Command Failed'
-              echo "$flywayDiffs"
-              exit 1 
-              }
-
-              echo "Script Validation - Check if any differences found"
-
-              # Capture exit code
-              EXIT_CODE=$?
-
-              # Display output in console
-              echo "$flywayDiffs"
-
-              if [[ $EXIT_CODE -eq 0 && "$flywayDiffs" == *"no differences detected"* ]]; then
-                  echo "No changes to generate. Exiting script gracefully."
-                  echo "CHANGES_DETECTED=false" >> "$GITHUB_ENV"
-                  echo "CHANGES_DETECTED=false" >> "$GITHUB_OUTPUT"
-                  exit 0
-                elif [[ $EXIT_CODE -eq 0 ]]; then
-                  echo "Changes detected. Proceeding with further steps."
-                  echo "CHANGES_DETECTED=true" >> "$GITHUB_ENV"
-                  echo "CHANGES_DETECTED=true" >> "$GITHUB_OUTPUT"
-                else
-                  echo "Error: The flyway prepare command failed. Exiting script with error."
-                  exit 1
-                fi
-      # Step 3 - Deploy: Deploy changes to target environment
-      - name: Flyway CLI - Deploy Changes
-        if: ${{ env.EXECUTE_BUILD == 'true' && env.CHANGES_DETECTED == 'true' && success() }}
-        run: |
-            echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
-              flyway deploy \
-                -environment="${{ env.TARGET_ENVIRONMENT }}" \
-                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
-                -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
-                ${{ env.CUSTOM_PARAMS }}
+              ${{ env.CUSTOM_PARAMS }}
       # GitHub - After migration scripts are validated, publish them as an artifact
       - name: Publish Validated Migration Scripts as Artifact
         if: ${{ env.publishArtifacts == 'true' && success() }}
