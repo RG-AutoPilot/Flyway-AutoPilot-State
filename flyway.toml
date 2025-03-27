@@ -8,12 +8,10 @@ displayName = "Development database"
 
 [environments.Prod]
 url = "jdbc:sqlserver://localhost;databaseName=AutopilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ "dbo", "Customers", "Logistics", "Operation", "Sales"]
 displayName = "Production Database"
 
 [environments.Test]
 url = "jdbc:sqlserver://localhost;databaseName=AutopilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ "dbo", "Customers", "Logistics", "Operation", "Sales"]
 displayName = "Test database"
 
 [environments.Check]
