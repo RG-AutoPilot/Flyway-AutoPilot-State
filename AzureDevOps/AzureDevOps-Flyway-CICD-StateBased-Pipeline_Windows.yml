@@ -202,7 +202,7 @@ stages:
       - name: SCRIPT_FILENAME
         value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
       - name: REPORT_FILENAME
-        value: "Flyway-$(DATABASE_NAME)-Changes_Report.sql"
+        value: "Flyway-$(DATABASE_NAME)-Changes_Report.html"
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
@@ -413,7 +413,7 @@ stages:
       - name: SCRIPT_FILENAME
         value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
       - name: REPORT_FILENAME
-        value: "Flyway-$(DATABASE_NAME)-Changes_Report.sql"
+        value: "Flyway-$(DATABASE_NAME)-Changes_Report.html"
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
