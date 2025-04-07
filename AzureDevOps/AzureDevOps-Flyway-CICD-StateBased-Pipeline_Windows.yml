@@ -2,10 +2,10 @@
 
 # ===========================
 # Pipeline Name: AzureDevOps-Flyway-CICD-StateBased-Pipeline_Windows.yml
-# Version: 1.0.1
+# Version: 1.0.2
 # Author: Redgate Software Ltd
-# Last Updated: 2025-03-19
-# Last Update Notes: Added CLI Verb chaining to build task
+# Last Updated: 2025-04-07
+# Last Update Notes: Updated change report to add -changes
 # Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Windows Runners
 # ===========================
 
@@ -200,7 +200,9 @@ stages:
       - name: TARGET_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
         value: "Test"
       - name: SCRIPT_FILENAME
-        value: "Flyway-$(DATABASE_NAME)-AutoDeploymentScript.sql"
+        value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
+      - name: REPORT_FILENAME
+        value: "Flyway-$(DATABASE_NAME)-Changes_Report.sql"
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
@@ -253,9 +255,10 @@ stages:
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
+        # Step 2 - Prepare Dryrun Script
         - task: PowerShell@2
           name: 'prepareScript'
-          displayName: 'Flyway CLI - Prepare Script'
+          displayName: 'Flyway CLI - Prepare Dry Run Script'
           condition: and(succeeded(), eq(variables['generateReport'], true))
           inputs:
             targetType: 'inline'
@@ -285,14 +288,31 @@ stages:
                   Write-Host "Error: The flyway prepare command failed. Exiting script with error."
                   exit 1  # Exit with error
                 }
-        # Step 3 - Publish Check Report
+        # Step 3 - Creating Changes Report
+        - task: PowerShell@2
+          name: 'changeReport'
+          displayName: 'Flyway CLI - Changes Report'
+          condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
+          inputs:
+            targetType: 'inline'
+            script: |
+                flyway check -changes `
+                "-check.changesSource=$(SOURCE_ENVIRONMENT)" `
+                "-environment=$(TARGET_ENVIRONMENT)" `
+                "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `
+                "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" `
+                -configFiles="$(WORKING_DIRECTORY)\flyway.toml" `
+                -workingDirectory="$(WORKING_DIRECTORY)" `
+                "-reportFilename=$(WORKING_DIRECTORY)\Artifact\$(REPORT_FILENAME)" `
+                $(CUSTOM_PARAMS)
+        # Step 4 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
           continueOnError: true
           condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
           inputs:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
-            PathtoPublish: '$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)'
+            PathtoPublish: '$(WORKING_DIRECTORY)\\Artifact\\'
         
 
     - job: CodeReview
@@ -301,7 +321,7 @@ stages:
       condition: and(succeeded(), eq(dependencies.changeReport.outputs['prepareScript.CHANGES_DETECTED'], 'true'))
       pool: server
       steps:
-        # Optional - Manual Validation Step
+       # Optional - Manual Validation Step
         - task: ManualValidation@0
           condition: eq(variables['pauseForCodeReview'], true)
           displayName: 'Review Change Report Prior To Release'
@@ -391,7 +411,9 @@ stages:
       - name: TARGET_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
         value: "Prod"
       - name: SCRIPT_FILENAME
-        value: "Flyway-$(DATABASE_NAME)-AutoDeploymentScript.sql"
+        value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
+      - name: REPORT_FILENAME
+        value: "Flyway-$(DATABASE_NAME)-Changes_Report.sql"
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
@@ -444,6 +466,7 @@ stages:
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
+        # Step 2 - Creating Dryrun Script
         - task: PowerShell@2
           displayName: 'Flyway CLI - Prepare Scripts'
           name: 'prepareScript'
@@ -476,15 +499,31 @@ stages:
                   Write-Host "Error: The flyway prepare command failed. Exiting script with error."
                   exit 1  # Exit with error
                 }
-        # Step 3 - Publish Check Report
+        # Step 3 - Creating Changes Report
+        - task: PowerShell@2
+          name: 'changeReport'
+          displayName: 'Flyway CLI - Changes Report'
+          condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
+          inputs:
+            targetType: 'inline'
+            script: |
+                flyway check -changes `
+                "-check.changesSource=$(SOURCE_ENVIRONMENT)" `
+                "-environment=$(TARGET_ENVIRONMENT)" `
+                "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `
+                "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" `
+                -configFiles="$(WORKING_DIRECTORY)\flyway.toml" `
+                "-reportFilename=$(WORKING_DIRECTORY)\Artifact\$(REPORT_FILENAME)" `
+                -workingDirectory="$(WORKING_DIRECTORY)" `
+                $(CUSTOM_PARAMS)
+        # Step 4 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
           continueOnError: true
           condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
           inputs:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
-            PathtoPublish: '$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)'
-        
+            PathtoPublish: '$(WORKING_DIRECTORY)\\Artifact\\'
 
     - job: CodeReview
       displayName: Code Review
