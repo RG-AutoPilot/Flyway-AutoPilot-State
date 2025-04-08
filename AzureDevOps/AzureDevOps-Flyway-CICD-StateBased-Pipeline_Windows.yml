@@ -4,8 +4,8 @@
 # Pipeline Name: AzureDevOps-Flyway-CICD-StateBased-Pipeline_Windows.yml
 # Version: 1.0.2
 # Author: Redgate Software Ltd
-# Last Updated: 2025-04-07
-# Last Update Notes: Updated change report to add -changes
+# Last Updated: 2025-04-08
+# Last Update Notes: Added Check -changes report step
 # Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Windows Runners
 # ===========================
 
