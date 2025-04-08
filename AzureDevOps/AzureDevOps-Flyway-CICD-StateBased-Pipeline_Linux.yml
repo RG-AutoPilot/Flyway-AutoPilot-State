@@ -189,7 +189,9 @@ stages:
       - name: TARGET_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
         value: "Test"
       - name: SCRIPT_FILENAME
-        value: "Flyway-$(DATABASE_NAME)-AutoDeploymentScript.sql"
+        value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
+      - name: REPORT_FILENAME
+        value: "Flyway-$(DATABASE_NAME)-Changes_Report.html"
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
@@ -231,6 +233,7 @@ stages:
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
+        # Step 2 - Prepare Dryrun Script
         - task: Bash@3
           name: 'prepareScript'
           displayName: 'Flyway CLI - Prepare Script'
@@ -269,15 +272,32 @@ stages:
                 echo "Error: The flyway prepare command failed. Exiting script with error."
                 exit 1  # Exit with error
               fi
-
-        # Step 3 - Publish Check Report
+        # Step 3 - Creating Changes Report
+        - task: Bash@3
+          name: 'changeReport'
+          displayName: 'Flyway CLI - Changes Report'
+          condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
+          inputs:
+            targetType: 'inline'
+            script: |
+              # Run Flyway Check -Changes Report
+              flyway check -changes \
+              "-check.changesSource=$(SOURCE_ENVIRONMENT)" \
+              "-environment=$(TARGET_ENVIRONMENT)" \
+              "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
+              "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
+              -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
+              -workingDirectory="$(WORKING_DIRECTORY)" \
+              "-reportFilename=$(WORKING_DIRECTORY)/Artifact/$(REPORT_FILENAME)" \
+              $(CUSTOM_PARAMS)
+        # Step 4 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
           continueOnError: true
-          condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], 'true'))
+          condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
           inputs:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
-            PathtoPublish: '$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)'
+            PathtoPublish: '$(WORKING_DIRECTORY)//Artifact//'
 
     - job: CodeReview
       displayName: Code Review
@@ -365,7 +385,9 @@ stages:
       - name: TARGET_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
         value: "Prod"
       - name: SCRIPT_FILENAME
-        value: "Flyway-$(DATABASE_NAME)-AutoDeploymentScript.sql"
+        value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
+      - name: REPORT_FILENAME
+        value: "Flyway-$(DATABASE_NAME)-Changes_Report.html"
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
@@ -407,6 +429,7 @@ stages:
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
+        # Step 2 - Prepare Dryrun Script
         - task: Bash@3
           name: 'prepareScript'
           displayName: 'Flyway CLI - Prepare Script'
@@ -445,16 +468,32 @@ stages:
                 echo "Error: The flyway prepare command failed. Exiting script with error."
                 exit 1  # Exit with error
               fi
-        # Step 3 - Publish Check Report
+        # Step 3 - Creating Changes Report
+        - task: Bash@3
+          name: 'changeReport'
+          displayName: 'Flyway CLI - Changes Report'
+          condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
+          inputs:
+            targetType: 'inline'
+            script: |
+              # Run Flyway Check -Changes Report
+              flyway check -changes \
+              "-check.changesSource=$(SOURCE_ENVIRONMENT)" \
+              "-environment=$(TARGET_ENVIRONMENT)" \
+              "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
+              "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
+              -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
+              -workingDirectory="$(WORKING_DIRECTORY)" \
+              "-reportFilename=$(WORKING_DIRECTORY)/Artifact/$(REPORT_FILENAME)" \
+              $(CUSTOM_PARAMS)
+        # Step 4 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
           continueOnError: true
           condition: and(succeeded(), eq(variables['CHANGES_DETECTED_LOCAL'], 'true'), eq(variables['generateReport'], true))
           inputs:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
-            PathtoPublish: '$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)'
-        
-
+            PathtoPublish: '$(WORKING_DIRECTORY)//Artifact//'
     - job: CodeReview
       displayName: Code Review
       dependsOn: ChangeReport

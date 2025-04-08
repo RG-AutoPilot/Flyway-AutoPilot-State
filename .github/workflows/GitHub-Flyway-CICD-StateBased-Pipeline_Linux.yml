@@ -136,7 +136,8 @@ jobs:
         ENVIRONMENT: "Test" # Refers to the environment in the Flyway Project TOML file.
         SOURCE_ENVIRONMENT: "schemaModel"
         TARGET_ENVIRONMENT: "Test"
-        SCRIPT_FILENAME: "Flyway-AutoPilotTest-AutoDeploymentScript.sql"
+        SCRIPT_FILENAME: "Flyway-AutoPilotTest-DryRun_Deployment_Script.sql"
+        REPORT_FILENAME: "Flyway-AutoPilotTest-Changes_Report.html"
         TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
         TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
         CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -201,13 +202,30 @@ jobs:
                     echo "Error: The flyway prepare command failed. Exiting script with error."
                     exit 1
                   fi
-        # Step 3 - Publish Check Report
+        # Step 3 - Creating Changes Report #
+        - name: Flyway CLI - Changes Report
+          if: ${{ env.GENERATE_REPORT == 'true' && success() }}
+          run: |
+              # Run Flyway Check -Changes Report
+              echo "Flyway CLI - Creating change report for changes from ${{ env.SOURCE_ENVIRONMENT }} to ${{ env.TARGET_ENVIRONMENT }}"
+              flyway check -changes \
+              -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" \
+              -environment="${{ env.TARGET_ENVIRONMENT }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+              -workingDirectory="${{ GITHUB.WORKSPACE }}" \
+              -reportFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}" \
+              ${{ env.CUSTOM_PARAMS }}
+        # Step 4 - Publish Check Report
         - name: Publish Check Report as Artifact
           if: ${{ env.GENERATE_REPORT == 'true' && success() }}
           uses: actions/upload-artifact@v4
           with: 
             name: flyway-reports-test
-            path: ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}  
+            path: |
+              ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}
+              ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}    
 
         # Step 3 - Deploy: Deploy changes to target environment
         - name: Flyway CLI - Deploy Changes
@@ -234,7 +252,8 @@ jobs:
       ENVIRONMENT: "Prod" # Refers to the environment name in the Flyway Project TOML file.
       SOURCE_ENVIRONMENT: "schemaModel"
       TARGET_ENVIRONMENT: "Prod"
-      SCRIPT_FILENAME: "Flyway-AutoPilotProd-AutoDeploymentScript.sql"
+      SCRIPT_FILENAME: "Flyway-AutoPilotProd-DryRun_Deployment_Script.sql"
+      REPORT_FILENAME: "Flyway-AutoPilotProd-Changes_Report.html"      
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -298,14 +317,30 @@ jobs:
                   echo "Error: The flyway prepare command failed. Exiting script with error."
                   exit 1
                 fi
-      # Step 3 - Publish Check Report
+        # Step 3 - Creating Changes Report #
+      - name: Flyway CLI - Changes Report
+        if: ${{ env.GENERATE_REPORT == 'true' && success() }}
+        run: |
+            # Run Flyway Check -Changes Report
+            echo "Flyway CLI - Creating change report for changes from ${{ env.SOURCE_ENVIRONMENT }} to ${{ env.TARGET_ENVIRONMENT }}"
+            flyway check -changes \
+            -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" \
+            -environment="${{ env.TARGET_ENVIRONMENT }}" \
+            -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+            -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+            -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+            -workingDirectory="${{ GITHUB.WORKSPACE }}" \
+            -reportFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}" \
+            ${{ env.CUSTOM_PARAMS }}
+      # Step 4 - Publish Check Report
       - name: Publish Check Report as Artifact
-        if: ${{ env.generateReport == 'true' && success() }}
+        if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         uses: actions/upload-artifact@v4
         with: 
-          name: flyway-reports-test
-          path: ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}  
-
+          name: flyway-reports-prod
+          path: |
+            ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}
+            ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }} 
       # Step 3 - Deploy: Deploy changes to target environment
       - name: Flyway CLI - Deploy Changes
         if: ${{ env.CHANGES_DETECTED == 'true' && success() }}
