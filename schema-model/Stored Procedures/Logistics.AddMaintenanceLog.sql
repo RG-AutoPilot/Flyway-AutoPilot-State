@@ -8,5 +8,6 @@ AS BEGIN
     INSERT INTO Logistics.MaintenanceLog(FlightID, Description, MaintenanceStatus)
     VALUES(@FlightID, @Description, 'Pending');
     PRINT 'Maintenance log entry created.';
+asdasdas
 END;
 GO
