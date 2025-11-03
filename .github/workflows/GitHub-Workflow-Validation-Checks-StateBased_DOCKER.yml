@@ -1,4 +1,4 @@
-name: GitHub - FastTrack Pipeline Validation Workflow (Docker-native)
+name: GitHub - State Based Pipeline Validation Workflow (Docker-native)
 
 on:
   workflow_dispatch:
@@ -48,7 +48,7 @@ jobs:
 
       - name: Pull SQL Server image
         run: docker pull $IMAGE_NAME
-
+      
       - name: Start SQL Server container
         run: |
           echo "Starting SQL Server container on port $HOST_PORT..."
@@ -61,7 +61,6 @@ jobs:
 
           echo "Waiting for SQL Server to become ready..."
           for i in {1..30}; do
-            if docker exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -Q "SELECT 1" &>/dev/null; then
               echo "SQL Server is ready!"
               break
             fi
@@ -69,20 +68,24 @@ jobs:
             sleep 5
           done
 
-      - name: Initialize database using repo script
+      - name: Install mssql-tools inside container
         run: |
-          if [ -f "$DB_INIT_SCRIPT" ]; then
-            echo "Copying $DB_INIT_SCRIPT into container..."
-            docker cp "$DB_INIT_SCRIPT" $CONTAINER_NAME:/tmp/CreateAutopilotDatabases.sql
+          docker exec $CONTAINER_NAME bash -c "apt-get update && \
+            apt-get install -y curl gnupg2 apt-transport-https && \
+            curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+            curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-tools.list && \
+            apt-get update && \
+            ACCEPT_EULA=Y apt-get install -y mssql-tools unixodbc-dev && \
+            echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
 
-            echo "Running initialization script inside container..."
-            docker exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd \
-              -S localhost -U sa -P "$SA_PASSWORD" \
-              -i /tmp/CreateAutopilotDatabases.sql
-          else
-            echo "Database initialization script not found: $DB_INIT_SCRIPT"
-            exit 1
-          fi
+      - name: Copy database creation script into container
+        run: |
+          docker cp "${GITHUB_WORKSPACE}/Scripts/CreateAutopilotDatabases.sql" $CONTAINER_NAME:/tmp/CreateAutopilotDatabases.sql
+
+      - name: Initialize database
+        run: |
+          docker exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd \
+            -S localhost -U sa -P "$SA_PASSWORD" -i /tmp/CreateAutopilotDatabases.sql
 
       - name: Export connection info for Flyway
         run: |
@@ -93,7 +96,7 @@ jobs:
   Validate-Flyway-Pipeline:
     name: Run Flyway Pipeline
     needs: setup-validation-environment
-    uses: ./.github/workflows/GitHub-Flyway-CICD-Pipeline_Linux.yml
+    uses: ./.github/workflows/GitHub-Flyway-CICD-StateBased-Pipeline_Linux.yml
     secrets: inherit
 
   cleanup:
