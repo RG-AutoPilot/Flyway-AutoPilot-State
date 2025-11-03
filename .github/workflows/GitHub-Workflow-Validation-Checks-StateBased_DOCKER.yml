@@ -58,13 +58,6 @@ jobs:
             -e "SA_PASSWORD=$SA_PASSWORD" \
             -p $HOST_PORT:1433 \
             $IMAGE_NAME
-          echo "Waiting for SQL Server to become ready..."
-          for i in {1..30}; do
-            echo "Still waiting... ($i/30)"
-            sleep 5
-          done
-
-          echo "Finished waiting. Proceeding with next steps..."
 
       - name: Install mssql-tools inside container
         run: |
