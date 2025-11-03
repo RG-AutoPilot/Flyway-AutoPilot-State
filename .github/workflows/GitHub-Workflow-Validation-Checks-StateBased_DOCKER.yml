@@ -1,0 +1,111 @@
+name: GitHub - FastTrack Pipeline Validation Workflow (Docker-native)
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [trigger-validation]
+  pull_request:
+    branches:
+      - release
+      - 'feature/*'
+
+jobs:
+  setup-validation-environment:
+    name: Spin Up SQL Server Container
+    runs-on: "self-hosted"
+    env:
+      IMAGE_NAME: "mcr.microsoft.com/mssql/server:2019-latest"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      HOST_PORT: "${{ vars.RGCLONE_PROXY_PORT }}"
+      BASE_CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}"
+      CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}-${{ github.run_number }}"
+      DB_INIT_SCRIPT: "${{ github.workspace }}/Scripts/CreateAutopilotDatabases.sql"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Docker availability
+        run: docker version || echo "Docker not found, please install before running this workflow."
+
+      - name: Check if port is in use and free it
+        run: |
+          echo "Checking if port $HOST_PORT is in use..."
+          if lsof -i :$HOST_PORT &>/dev/null; then
+            echo "Port $HOST_PORT is in use. Checking for container..."
+            EXISTING_CONTAINER=$(docker ps --filter "publish=$HOST_PORT" --format "{{.Names}}")
+            if [ -n "$EXISTING_CONTAINER" ]; then
+              echo "Stopping and removing container using port $HOST_PORT ($EXISTING_CONTAINER)..."
+              docker stop "$EXISTING_CONTAINER" || true
+              docker rm "$EXISTING_CONTAINER" || true
+            else
+              echo "No Docker container found using port $HOST_PORT, killing any process..."
+              PID=$(lsof -ti :$HOST_PORT)
+              kill -9 $PID || true
+            fi
+          else
+            echo "Port $HOST_PORT is free."
+          fi
+
+      - name: Pull SQL Server image
+        run: docker pull $IMAGE_NAME
+
+      - name: Start SQL Server container
+        run: |
+          echo "Starting SQL Server container on port $HOST_PORT..."
+          docker run -d \
+            --name $CONTAINER_NAME \
+            -e 'ACCEPT_EULA=Y' \
+            -e "SA_PASSWORD=$SA_PASSWORD" \
+            -p $HOST_PORT:1433 \
+            $IMAGE_NAME
+
+          echo "Waiting for SQL Server to become ready..."
+          for i in {1..30}; do
+            if docker exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -Q "SELECT 1" &>/dev/null; then
+              echo "SQL Server is ready!"
+              break
+            fi
+            echo "Still waiting... ($i/30)"
+            sleep 5
+          done
+
+      - name: Initialize database using repo script
+        run: |
+          if [ -f "$DB_INIT_SCRIPT" ]; then
+            echo "Copying $DB_INIT_SCRIPT into container..."
+            docker cp "$DB_INIT_SCRIPT" $CONTAINER_NAME:/tmp/CreateAutopilotDatabases.sql
+
+            echo "Running initialization script inside container..."
+            docker exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd \
+              -S localhost -U sa -P "$SA_PASSWORD" \
+              -i /tmp/CreateAutopilotDatabases.sql
+          else
+            echo "Database initialization script not found: $DB_INIT_SCRIPT"
+            exit 1
+          fi
+
+      - name: Export connection info for Flyway
+        run: |
+          echo "dbUser=sa" >> "$GITHUB_ENV"
+          echo "dbPassword=$SA_PASSWORD" >> "$GITHUB_ENV"
+          echo "instance=localhost,$HOST_PORT" >> "$GITHUB_ENV"
+
+  Validate-Flyway-Pipeline:
+    name: Run Flyway Pipeline
+    needs: setup-validation-environment
+    uses: ./.github/workflows/GitHub-Flyway-CICD-Pipeline_Linux.yml
+    secrets: inherit
+
+  cleanup:
+    name: Cleanup SQL Server Container
+    runs-on: "self-hosted"
+    needs: Validate-Flyway-Pipeline
+    if: always()
+    env:
+      CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}-${{ github.run_number }}"
+    steps:
+      - name: Stop and remove container
+        run: |
+          echo "Cleaning up container $CONTAINER_NAME"
+          docker stop $CONTAINER_NAME || true
+          docker rm $CONTAINER_NAME || true
