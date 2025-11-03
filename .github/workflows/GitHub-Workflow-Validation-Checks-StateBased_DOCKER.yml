@@ -15,7 +15,7 @@ jobs:
     runs-on: "self-hosted"
     env:
       IMAGE_NAME: "mcr.microsoft.com/mssql/server:2019-latest"
-      SA_PASSWORD: "YourStrong!Passw0rd"
+      SA_PASSWORD: "DatabaseDevOps!"
       HOST_PORT: "${{ vars.RGCLONE_PROXY_PORT }}"
       BASE_CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}"
       CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}-${{ github.run_number }}"
