@@ -1,83 +1,310 @@
-**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS (if applicable)**
+**⚠️ RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
 
-# Developer Quest - Complex Stored Procedures and Functions
+# Scenario Quest - Stored Procedures and Functions
 
-**Difficulty:** Advanced  
-**Time:** 45-60 minutes  
-**Prerequisites:** Flyway Desktop, SQL programming experience
+**Difficulty:** 🔴 Advanced  
+**Time:** 30-45 minutes  
+**Prerequisites:** Flyway Desktop, SQL programming experience, understanding of database code objects
 
-## Learning Objectives
+## 🎯 Learning Objectives
 By completing this quest, you will learn:
-- Creating complex stored procedures with parameters
-- Writing scalar and table-valued functions
-- Implementing error handling in procedures
-- Using transactions for data consistency
-- Optimizing procedure performance
-- Best practices for stored procedure design
-- Version controlling procedures with Flyway repeatable migrations
+- How Flyway handles stored procedures, functions, and other database code objects
+- Understanding repeatable migrations vs versioned migrations for code
+- Creating and modifying procedures in a version-controlled workflow
+- Best practices for database code in Flyway projects
+- Testing how Flyway detects and captures procedure changes
 
-## Scenario
-Your operations team needs a robust stored procedure to query upcoming flights. Additionally, the analytics team needs a function to calculate flight occupancy rates. These database objects must:
-- Accept flexible parameters
-- Handle errors gracefully
-- Perform efficiently with large datasets
-- Be properly version-controlled
+## 📖 Scenario
+During your POC or rollout phase, you need to understand how Flyway handles database code objects like stored procedures and functions. Unlike tables (which are created once and modified), procedures are typically CREATE OR ALTER - they're recreated every deployment.
 
-## Your Mission
-Create production-quality stored procedures and functions that meet enterprise standards for error handling, performance, and maintainability.
+You want to test:
+- Does Flyway track stored procedures?
+- How do changes to procedures get captured?
+- Do procedures deploy correctly across environments?
+- What's the difference between versioned and repeatable migrations for code?
 
-## Objective
-1. Create a stored procedure `Inventory.GetUpcomingFlights` with date range parameters
-2. Create a scalar function `Inventory.CalculateOccupancyRate` 
-3. Create a table-valued function `Inventory.GetFlightsByRoute`
-4. Implement proper error handling
-5. Add performance optimizations
-6. Version control all objects as repeatable migrations
+## 🎯 Your Mission
+Create stored procedures and functions, modify them, and observe how Flyway tracks and deploys these database code objects.
 
-## Part 1: Parameterized Stored Procedure
+## 📋 Understanding Database Code in Flyway
 
-### Step 1: Create GetUpcomingFlights Procedure
+### Versioned vs Repeatable Migrations
+
+**Versioned Migrations (V...):**
+- Run once per environment
+- Used for schema changes (CREATE TABLE, ALTER TABLE)
+- Perfect for structural changes
+- Cannot be changed once applied
+
+**Repeatable Migrations (R...):**
+- Run every time their checksum changes
+- Perfect for stored procedures, views, functions
+- Can be modified and redeployed
+- Always bring code to latest version
+
+### How Flyway Handles Procedures
+
+When you create a stored procedure:
+1. Flyway captures it in the schema model
+2. Can generate either V... or R... migration
+3. On deployment, procedure is created/updated
+4. Subsequent changes regenerate the script
+
+## 📝 Steps
+
+### Step 1: Create Your First Stored Procedure
+
+Create a simple procedure to query flights:
 
 ```sql
--- Create or alter the stored procedure
-CREATE OR ALTER PROCEDURE Inventory.GetUpcomingFlights
-    @StartDate DATETIME = NULL,
-    @EndDate DATETIME = NULL,
-    @DepartureCity NVARCHAR(100) = NULL,
-    @ArrivalCity NVARCHAR(100) = NULL,
-    @MinAvailableSeats INT = 0,
-    @SortBy NVARCHAR(20) = 'DepartureTime'  -- Options: DepartureTime, Price, Duration
+CREATE OR ALTER PROCEDURE Logistics.GetUpcomingFlights
+    @DaysAhead INT = 7
 AS
 BEGIN
-    SET NOCOUNT ON;  -- Improve performance
+    SET NOCOUNT ON;
     
-    -- Input validation
-    IF @StartDate IS NULL
-        SET @StartDate = GETDATE();  -- Default to now
+    SELECT 
+        FlightID,
+        FlightNumber,
+        DepartureCity,
+        ArrivalCity,
+        DepartureTime,
+        ArrivalTime,
+        AvailableSeats
+    FROM Logistics.Flight
+    WHERE DepartureTime BETWEEN GETDATE() AND DATEADD(DAY, @DaysAhead, GETDATE())
+    ORDER BY DepartureTime;
+END;
+GO
+```
+
+### Step 2: Capture in Flyway Desktop
+
+1. **Open Flyway Desktop**
+2. **Navigate to Schema Model tab**
+3. **Look for the new stored procedure** - it should appear in pending changes
+4. **Generate Migration**:
+   - Flyway detects the new procedure
+   - Choose migration type:
+     - **Versioned (V...)** - Procedure is part of a schema version
+     - **Repeatable (R...)** - Procedure can be modified later (recommended)
+
+5. **Review Generated Script**:
+   ```sql
+   -- Example: R__Logistics_GetUpcomingFlights.sql
+   CREATE OR ALTER PROCEDURE Logistics.GetUpcomingFlights
+       @DaysAhead INT = 7
+   AS
+   BEGIN
+       ...
+   END;
+   GO
+   ```
+
+6. **Save and Commit** to source control
+
+### Step 3: Modify the Procedure
+
+Now change the procedure and see how Flyway handles it:
+
+```sql
+-- Modified version with additional parameter
+CREATE OR ALTER PROCEDURE Logistics.GetUpcomingFlights
+    @DaysAhead INT = 7,
+    @MinimumSeats INT = 0  -- NEW PARAMETER
+AS
+BEGIN
+    SET NOCOUNT ON;
     
-    IF @EndDate IS NULL
-        SET @EndDate = DATEADD(DAY, 30, @StartDate);  -- Default to 30 days out
-    
-    IF @StartDate > @EndDate
-    BEGIN
-        RAISERROR('StartDate cannot be after EndDate', 16, 1);
-        RETURN -1;
-    END;
-    
-    -- Error handling
-    BEGIN TRY
-        -- Main query
-        SELECT 
-            f.FlightID,
-            f.FlightNumber,
-            f.DepartureCity,
-            f.ArrivalCity,
-            f.DepartureTime,
-            f.ArrivalTime,
-            f.AvailableSeats,
-            f.FlightDurationMinutes,
-            DATEDIFF(DAY, GETDATE(), f.DepartureTime) AS DaysUntilDeparture,
-            CAST(ROUND(
+    SELECT 
+        FlightID,
+        FlightNumber,
+        DepartureCity,
+        ArrivalCity,
+        DepartureTime,
+        ArrivalTime,
+        AvailableSeats
+    FROM Logistics.Flight
+    WHERE DepartureTime BETWEEN GETDATE() AND DATEADD(DAY, @DaysAhead, GETDATE())
+        AND AvailableSeats >= @MinimumSeats  -- NEW FILTER
+    ORDER BY DepartureTime;
+END;
+GO
+```
+
+### Step 4: Capture the Change
+
+1. **Flyway Desktop detects the change**
+2. **For Repeatable Migration (R__)**:
+   - Flyway updates the existing R__ script
+   - Checksum changes
+   - On next deployment, procedure is recreated with new version
+
+3. **Generate and Save**:
+   - The R__ file is updated with new code
+   - Commit the change to source control
+
+### Step 5: Create a Function
+
+Test how Flyway handles functions:
+
+```sql
+CREATE OR ALTER FUNCTION Logistics.CalculateFlightDuration
+(
+    @DepartureTime DATETIME,
+    @ArrivalTime DATETIME
+)
+RETURNS INT
+AS
+BEGIN
+    RETURN DATEDIFF(MINUTE, @DepartureTime, @ArrivalTime);
+END;
+GO
+```
+
+**Capture in Flyway:**
+- Same process as procedures
+- Typically use R__ (repeatable) migration
+- Functions redeploy on every change
+
+## ✅ Success Criteria
+
+You've successfully completed this quest when:
+
+- ✅ Created a stored procedure and captured it in Flyway
+- ✅ Understand the difference between V__ and R__ migrations
+- ✅ Modified a procedure and re-captured the change
+- ✅ Created a function and captured it
+- ✅ Committed all database code to source control
+- ✅ Understand how procedures deploy across environments
+
+## 🐛 Troubleshooting
+
+### "Procedure not detected by Flyway"
+**Problem:** New procedure doesn't show in pending changes.  
+**Solution:**
+- Refresh Flyway Desktop schema comparison
+- Verify the procedure was created successfully in the database
+- Check you're connected to the correct database
+
+### "Cannot modify R__ migration"
+**Problem:** Flyway shows checksum error.  
+**Solution:**
+- This is expected! Repeatable migrations are meant to change
+- Flyway will re-run the R__ script on next deployment
+- The checksum difference triggers the re-execution
+
+### "Procedure deployed but not working"
+**Problem:** Procedure exists but has errors when called.  
+**Solution:**
+- Test the procedure directly in SSMS first
+- Check for syntax errors
+- Verify dependent objects exist (tables, other procedures)
+- Add error handling with TRY/CATCH
+
+## 💡 Best Practices for Database Code
+
+### Repeatable Migrations for Code ✅
+```
+migrations/
+├── V001__Create_tables.sql         (schema - versioned)
+├── V002__Add_columns.sql            (schema - versioned)
+├── R__Logistics_GetFlights.sql      (code - repeatable)
+├── R__Logistics_CalculateDuration.sql  (code - repeatable)
+```
+
+**Why?**
+- Procedures/functions often need modifications
+- Repeatable migrations allow ongoing changes
+- Always deploys latest version
+- No need for ALTER scripts
+
+### Use CREATE OR ALTER ✅
+```sql
+-- ✅ GOOD: Works on first and subsequent runs
+CREATE OR ALTER PROCEDURE MyProc AS ...
+
+-- ❌ BAD: Fails if procedure already exists  
+CREATE PROCEDURE MyProc AS ...
+```
+
+### Organize by Schema
+```
+schema-model/
+└── Stored Procedures/
+    ├── Logistics.GetFlights.sql
+    ├── Logistics.UpdateSeats.sql
+    ├── Sales.ProcessOrder.sql
+    └── Sales.CalculateDiscount.sql
+```
+
+### Test Before Committing
+```sql
+-- Always test your procedures before capturing
+EXEC Logistics.GetUpcomingFlights @DaysAhead = 7, @MinimumSeats = 10;
+```
+
+## 🎓 Key Concepts Learned
+
+- **Repeatable Migrations:** Best for database code objects
+- **CREATE OR ALTER:** Idempotent procedure creation
+- **Schema Model:** How Flyway tracks stored procedures
+- **Code Changes:** How modifications are captured and deployed
+- **Deployment Behavior:** Procedures recreate on every deployment
+
+## 🧪 Scenario Testing Insights
+
+### What You Learned About Flyway:
+- ✅ Flyway tracks stored procedures just like tables
+- ✅ R__ migrations are perfect for code objects
+- ✅ Changes are easy to capture and deploy
+- ✅ Procedures redeploy automatically when code changes
+- ✅ Cross-environment consistency is maintained
+
+### POC Validation Points:
+If you're evaluating Flyway, you now know:
+- How your existing stored procedures will be managed
+- Whether the workflow fits your team's process
+- How code changes propagate across environments
+- Compatibility with your database code patterns
+
+## 🌟 Advanced Scenarios (Optional)
+
+Try these to explore further:
+
+1. **Create a procedure with dependencies**:
+   - Procedure A calls Procedure B
+   - See how Flyway handles deployment order
+
+2. **Add error handling**:
+   - Use TRY/CATCH blocks
+   - Test failure scenarios
+
+3. **Create table-valued functions**:
+   - More complex than scalar functions
+   - See if behavior differs
+
+4. **Test across environments**:
+   - Deploy procedure to Test
+   - Verify it works identically to Dev
+
+## 📚 Next Steps
+
+Explore more scenarios:
+
+1. **`Scenarios/Callbacks`** - Automate deployment tasks
+2. **`Development/First-Capture`** - If you haven't done basic workflows yet
+3. **`Operations/Deploy-Via-CLI`** - Automate procedure deployments
+
+## 📖 Additional Resources
+
+- [Flyway Repeatable Migrations](https://documentation.red-gate.com/flyway/flyway-concepts/migrations)
+- [SQL Server Stored Procedures Best Practices](https://documentation.red-gate.com/)
+- [Schema Model Documentation](https://documentation.red-gate.com/flyway)
+
+---
+
+**Congratulations!** 🎉 You understand how Flyway manages stored procedures, functions, and database code objects.
                 (1.0 - (CAST(f.AvailableSeats AS FLOAT) / 500)) * 100, 
                 1
             ) AS DECIMAL(5,1)) AS OccupancyPercentage

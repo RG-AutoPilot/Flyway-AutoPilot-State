@@ -1,0 +1,73 @@
+{
+    "_comments": [
+        "This file defines Ignore Rules for Flyway using Redgate Compare for Oracle.",
+        "https://documentation.red-gate.com/fd/oracle-ignore-rules-format-282626592.html",
+        "Patterns use Oracle regex with custom operators:",
+        "  . = Fetch all objects (Same as if the field is empty or not present)",
+		"  \! = Exclude all objects",
+        "  Enter the name of the object, such as T2, to ONLY get this object (Multiple lines can be provided)",
+        "  \!^PRE = starts with PRE",
+        "  SUFFIX$ = ends with SUFFIX",
+        "  \! = negate (exclude)",
+        "  \& = logical AND",
+        "Multiple patterns in a list = OR logic"
+    ],
+    "filters": {
+        "function": [
+            "."
+        ],
+        "job": [
+            "."
+        ],
+        "materializedView": [
+            "."
+        ],
+        "materializedViewLog": [
+            "."
+        ],
+        "package": [
+            "\!^TEST",
+            "\!^ZZZ"
+        ],
+        "packageBody": [
+            "\!^TEST",
+            "\!^ZZZ"
+        ],
+        "procedure": [
+            "."
+        ],
+        "publicSynonym": [
+            "."
+        ],
+        "queue": [
+            "."
+        ],
+        "queueTable": [
+            "."
+        ],
+        "sequence": [
+            "."
+        ],
+        "synonym": [
+            "."
+        ],
+        "table": [
+            "."
+        ],
+		 "index": [
+            "."
+        ],
+        "trigger": [
+            "."
+        ],
+        "type": [
+            "."
+        ],
+        "userObjectPrivileges": [
+            "."
+        ],
+        "view": [
+            "."
+        ]
+    }
+}

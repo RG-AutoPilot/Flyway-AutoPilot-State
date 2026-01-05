@@ -1,63 +1,63 @@
-**WE HAVE PROVIDED THE NEEDED SQL FOR THE CALLBACK SCRIPT**
+**⚠️ WE HAVE PROVIDED EXAMPLE SQL FOR THE CALLBACK SCRIPT**
 
-# Other Quest - Flyway Callbacks for Advanced Automation
+# Scenario Quest - Flyway Callbacks
 
-**Difficulty:** Advanced  
-**Time:** 40-50 minutes  
-**Prerequisites:** Understanding of Flyway lifecycle, basic scripting
+**Difficulty:** 🔴 Advanced  
+**Time:** 30-40 minutes  
+**Prerequisites:** Understanding of Flyway lifecycle, basic scripting knowledge
 
-## Learning Objectives
+## 🎯 Learning Objectives
 By completing this quest, you will learn:
-- Understanding Flyway callback lifecycle
-- Creating callback scripts for pre/post operations
-- Implementing afterClean callbacks
-- Using callbacks for automation and validation
-- Best practices for callback naming and organization
-- Advanced callback use cases
+- How Flyway's callback lifecycle works
+- When to use callbacks for automation
+- Creating callback scripts that run at specific deployment events
+- Testing callback execution
+- Real-world use cases for callbacks
 
-## Scenario
-Your CI/CD pipeline uses `flyway clean` to reset the database before running migrations during the Build stage. However, after `clean` completes, there are some cleanup operations that need to happen:
-- Verify all objects are truly deleted
-- Reset specific configuration settings
-- Create temporary objects needed for migration
-- Run validation checks before migration
+## 📖 Scenario
+During your POC or rollout, you're exploring how to extend Flyway's deployment process with custom automation. Your team has requirements like:
+- Logging deployment start/end times
+- Sending notifications when deployments complete
+- Running validation checks before migrations
+- Cleaning up temporary objects after deployment
 
-Currently, this is done manually or with separate scripts, making the process error-prone. You need to automate this using Flyway's callback mechanism.
+Callbacks let you hook into Flyway's lifecycle to add this automation without modifying your migration scripts.
 
-## Your Mission
-Create an `afterClean` callback script that runs automatically after `flyway clean` completes, ensuring the database is in the correct state for migrations.
+## 🎯 Your Mission
+Understand Flyway's callback system by creating callback scripts and observing when they execute during the deployment lifecycle.
 
-## Objective
-1. Understand the Flyway callback lifecycle
-2. Create an `afterClean.sql` callback script
-3. Implement verification checks in the callback
-4. Test the callback in the pipeline
-5. Validate that it executes at the right time
+## 📋 Understanding Flyway Callbacks
 
-## Understanding Flyway Callbacks
+Callbacks are SQL or script files that run automatically at specific points during Flyway commands.
 
-Flyway callbacks are scripts that run automatically at specific points in the migration lifecycle.
+### Available Callback Events:
 
-### Callback Lifecycle Events:
+**Migration Lifecycle:**
+- `beforeMigrate` - Before migrations begin
+- `beforeEachMigrate` - Before each individual migration
+- `afterEachMigrate` - After each individual migration  
+- `afterMigrate` - After all migrations complete
 
-**Before/After Migration:**
-- `beforeMigrate`: Before any migration runs
-- `afterMigrate`: After all migrations complete
+**Validation:**
+- `beforeValidate` - Before validation
+- `afterValidate` - After validation
 
-**Before/After Each:**
-- `beforeEachMigrate`: Before each migration script
-- `afterEachMigrate`: After each migration script
+**Clean (Dev only!):**
+- `beforeClean` - Before dropping all objects
+- `afterClean` - After clean completes
 
-**Before/After Validation:**
-- `beforeValidate`: Before validation runs
-- `afterValidate`: After validation completes
+**Other:**
+- `beforeUndo` - Before undo migrations (Enterprise)
+- `afterUndo` - After undo completes (Enterprise)
 
-**Before/After Clean:**
-- `beforeClean`: Before clean starts
-- `afterClean`: After clean completes  ← **You're implementing this!**
-
-**Before/After Undo:**
-- `beforeUndo`: Before undo runs
+### Callback File Naming:
+```
+callbacks/
+├── beforeMigrate.sql          -- Runs before migrate command
+├── afterMigrate.sql           -- Runs after migrate completes
+├── beforeEachMigrate.sql      -- Runs before each migration script
+├── afterClean.sql             -- Runs after clean command
+```
 - `afterUndo`: After undo completes
 
 **Other Events:**
