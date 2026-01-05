@@ -2,10 +2,10 @@
 
 # ===========================
 # Pipeline Name: GitHub-Flyway-CICD-StateBased-Pipeline_Linux.yml
-# Version: 1.0.3
+# Version: 1.0.4
 # Author: Redgate Software Ltd
-# Last Updated: 2025-05-06
-# Last Update Notes: Added CLEAN verb to build stage
+# Last Updated: 2026-01-05
+# Last Update Notes: Updated check reports to use new Snapshot's feature
 # Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Linux Runners
 # ===========================
  
@@ -52,7 +52,7 @@ env:
 
   # Optional: Side Quest #1 - Setup Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
-  FLYWAY_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
+  FLYWAY_DRIFT_ON_MIGRATE: "false" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
  
 ### DO NOT EDIT BELOW THIS LINE - All variables set in the above section will be consumed by the jobs below and therefore do not require any updates to function ###
 
@@ -139,6 +139,8 @@ jobs:
         TARGET_ENVIRONMENT: "Test"
         SCRIPT_FILENAME: "Flyway-AutoPilotTest-DryRun_Deployment_Script.sql"
         REPORT_FILENAME: "Flyway-AutoPilotTest-Changes_Report.html"
+        SNAPSHOT_FILENAME: "Flyway-Snapshot-AutoPilotTest"
+        SAVE_SNAPSHOT: "true"
         TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
         TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
         CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -170,9 +172,11 @@ jobs:
                 flywayDiffs=$(flyway prepare \
                 -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
                 -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+                -prepare.types="deploy,undo" \
                 -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
                 -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
-                -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/D_${{ env.SCRIPT_FILENAME }}" \
+                -prepare.undoFilename="${{ GITHUB.WORKSPACE }}/Artifact/U_${{ env.SCRIPT_FILENAME }}" \
                 -prepare.force="true" \
                 -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
                 -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
@@ -209,11 +213,13 @@ jobs:
           run: |
               # Run Flyway Check -Changes Report
               echo "Flyway CLI - Creating change report for changes from ${{ env.SOURCE_ENVIRONMENT }} to ${{ env.TARGET_ENVIRONMENT }}"
-              flyway check -changes \
+              flyway check -changes -drift -code \
               -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" \
               -environment="${{ env.TARGET_ENVIRONMENT }}" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -check.scope="script" \
+              -check.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/D_${{ env.SCRIPT_FILENAME }}" \
               -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
               -workingDirectory="${{ GITHUB.WORKSPACE }}" \
               -reportFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}" \
@@ -238,6 +244,7 @@ jobs:
                   -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
                   -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                   -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                  -deploy.saveSnapshot="${{ env.SAVE_SNAPSHOT }}" \
                   ${{ env.CUSTOM_PARAMS }}
             
   prod:
@@ -254,7 +261,9 @@ jobs:
       SOURCE_ENVIRONMENT: "schemaModel"
       TARGET_ENVIRONMENT: "Prod"
       SCRIPT_FILENAME: "Flyway-AutoPilotProd-DryRun_Deployment_Script.sql"
-      REPORT_FILENAME: "Flyway-AutoPilotProd-Changes_Report.html"      
+      REPORT_FILENAME: "Flyway-AutoPilotProd-Changes_Report.html"
+      SNAPSHOT_FILENAME: "Flyway-Snapshot-AutoPilotProd"
+      SAVE_SNAPSHOT: "true"      
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -285,9 +294,11 @@ jobs:
               flywayDiffs=$(flyway prepare \
               -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
               -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+              -prepare.types="deploy,undo" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
-              -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+              -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/D_${{ env.SCRIPT_FILENAME }}" \
+              -prepare.undoFilename="${{ GITHUB.WORKSPACE }}/Artifact/U_${{ env.SCRIPT_FILENAME }}" \
               -prepare.force="true" \
               -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
               -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
@@ -324,11 +335,13 @@ jobs:
         run: |
             # Run Flyway Check -Changes Report
             echo "Flyway CLI - Creating change report for changes from ${{ env.SOURCE_ENVIRONMENT }} to ${{ env.TARGET_ENVIRONMENT }}"
-            flyway check -changes \
+            flyway check -changes -drift -code \
             -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" \
             -environment="${{ env.TARGET_ENVIRONMENT }}" \
             -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
             -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+            -check.scope="script" \
+            -check.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/D_${{ env.SCRIPT_FILENAME }}" \
             -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
             -workingDirectory="${{ GITHUB.WORKSPACE }}" \
             -reportFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}" \
@@ -352,4 +365,5 @@ jobs:
                 -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
                 -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                 -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                -deploy.saveSnapshot="${{ env.SAVE_SNAPSHOT }}" \
                 ${{ env.CUSTOM_PARAMS }}

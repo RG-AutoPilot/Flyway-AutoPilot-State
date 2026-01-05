@@ -2,10 +2,10 @@
 
 # ===========================
 # Pipeline Name: AzureDevOps-Flyway-CICD-StateBased-Pipeline_Linux.yml
-# Version: 1.0.3
+# Version: 1.0.4
 # Author: Redgate Software Ltd
-# Last Updated: 2025-05-06
-# Last Update Notes: Added CLEAN verb to build stage
+# Last Updated: 2026-01-05
+# Last Update Notes: Updated check reports to use new Snapshot's feature
 # Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Linux Runners
 # ===========================
 
@@ -81,7 +81,7 @@ variables:
 
   # Optional: Side Quest #2 - Using the Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
-  FLYWAY_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
+  FLYWAY_DRIFT_ON_MIGRATE: "false" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
 
 ### End of Pipeline Variables - No further changes required below this line for default workflow ###
 
@@ -191,6 +191,10 @@ stages:
         value: "Test"
       - name: SCRIPT_FILENAME
         value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
+      - name: SNAPSHOT_FILENAME
+        value: "Flyway-Snapshot-$(DATABASE_NAME)"
+      - name: SAVE_SNAPSHOT
+        value: "true" # Turn to false to skip saving snapshot to snapshotHistory table
       - name: REPORT_FILENAME
         value: "Flyway-$(DATABASE_NAME)-Changes_Report.html"
       - name: CUSTOM_PARAMETERS
@@ -247,9 +251,11 @@ stages:
               flywayDiffs=$(flyway prepare \
                 "-prepare.source=$(SOURCE_ENVIRONMENT)" \
                 "-prepare.target=$(TARGET_ENVIRONMENT)" \
+                "-prepare.types=deploy,undo" \
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
-                "-prepare.scriptFilename=$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
+                "-prepare.scriptFilename=$(WORKING_DIRECTORY)/Artifact/D_$(SCRIPT_FILENAME)" \
+                "-prepare.undoFilename=$(WORKING_DIRECTORY)/Artifact/U_$(SCRIPT_FILENAME)" \
                 -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
                 $(CUSTOM_PARAMETERS) 2>&1)
 
@@ -282,11 +288,13 @@ stages:
             targetType: 'inline'
             script: |
               # Run Flyway Check -Changes Report
-              flyway check -changes \
+              flyway check -changes -drift -code \
               "-check.changesSource=$(SOURCE_ENVIRONMENT)" \
               "-environment=$(TARGET_ENVIRONMENT)" \
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
               "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
+              "-check.scope=script" \
+              "-check.scriptFilename=$(WORKING_DIRECTORY)/Artifact/D_$(SCRIPT_FILENAME)" \
               -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
               -workingDirectory="$(WORKING_DIRECTORY)" \
               "-reportFilename=$(WORKING_DIRECTORY)/Artifact/$(REPORT_FILENAME)" \
@@ -369,6 +377,7 @@ stages:
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
                 "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/$(SCRIPT_FILENAME)" \
+                "-deploy.saveSnapshot=$(SAVE_SNAPSHOT)" \
                 $(CUSTOM_PARAMETERS)
 
   - stage: Prod
@@ -387,6 +396,10 @@ stages:
         value: "Prod"
       - name: SCRIPT_FILENAME
         value: "Flyway-$(DATABASE_NAME)-Dryrun_Deployment_Script.sql"
+      - name: SNAPSHOT_FILENAME
+        value: "Flyway-Snapshot-$(DATABASE_NAME)"
+      - name: SAVE_SNAPSHOT
+        value: "true" # Turn to false to skip saving snapshot to snapshotHistory table
       - name: REPORT_FILENAME
         value: "Flyway-$(DATABASE_NAME)-Changes_Report.html"
       - name: CUSTOM_PARAMETERS
@@ -443,9 +456,11 @@ stages:
               flywayDiffs=$(flyway prepare \
                 "-prepare.source=$(SOURCE_ENVIRONMENT)" \
                 "-prepare.target=$(TARGET_ENVIRONMENT)" \
+                "-prepare.types=deploy,undo" \
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
-                "-prepare.scriptFilename=$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
+                "-prepare.scriptFilename=$(WORKING_DIRECTORY)/Artifact/D_$(SCRIPT_FILENAME)" \
+                "-prepare.undoFilename=$(WORKING_DIRECTORY)/Artifact/U_$(SCRIPT_FILENAME)" \
                 -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
                 $(CUSTOM_PARAMETERS) 2>&1)
 
@@ -478,11 +493,13 @@ stages:
             targetType: 'inline'
             script: |
               # Run Flyway Check -Changes Report
-              flyway check -changes \
+              flyway check -changes -drift -code \
               "-check.changesSource=$(SOURCE_ENVIRONMENT)" \
               "-environment=$(TARGET_ENVIRONMENT)" \
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
               "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
+              "-check.scope=script" \
+              "-check.scriptFilename=$(WORKING_DIRECTORY)/Artifact/D_$(SCRIPT_FILENAME)" \
               -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
               -workingDirectory="$(WORKING_DIRECTORY)" \
               "-reportFilename=$(WORKING_DIRECTORY)/Artifact/$(REPORT_FILENAME)" \
@@ -564,4 +581,5 @@ stages:
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
                 "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/$(SCRIPT_FILENAME)" \
+                "-deploy.saveSnapshot=$(SAVE_SNAPSHOT)" \
                 $(CUSTOM_PARAMETERS)
