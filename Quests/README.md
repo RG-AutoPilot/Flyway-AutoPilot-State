@@ -37,57 +37,141 @@ Create and test various database scenarios - stored procedures, constraints, cro
 
 ### 👨‍💻 Development Quests
 
-#### 🟢 First Capture
-**What you'll learn:** Capture your first database change into version control  
+#### 🟢 01 - Clone Project from Git
+**What you'll learn:** Clone and open a Flyway state-based project  
 **Time:** 15-20 minutes | **Difficulty:** Beginner  
-**Prerequisites:** Flyway Desktop installed, sample database connected  
-**Topics:** Schema model, capturing changes, version control basics, Flyway Desktop workflow
+**Prerequisites:** Git installed, Flyway Desktop installed  
+**Topics:** Project structure, schema model, opening projects, understanding folder layout
 
-Make a database change and capture it as a versioned migration using Flyway Desktop's state-based approach.
+Clone an existing Flyway project, open it in Flyway Desktop, and understand where schema changes should be made.
 
-**📁 Location:** `Development/First-Capture/`
-
----
-
-#### 🟢 Static Data
-**What you'll learn:** Version control reference and lookup data  
-**Time:** 25-30 minutes | **Difficulty:** Beginner  
-**Prerequisites:** Flyway Desktop installed, completed First Capture quest  
-**Topics:** Static data tracking, reference data management, data migrations
-
-Learn how to track and deploy configuration data (lookup tables, reference data) alongside your schema changes.
-
-**📁 Location:** `Development/Static-Data/`
+**📁 Location:** `Development/01-Clone-Project/`
 
 ---
 
-#### 🟡 Merging Changes
-**What you'll learn:** Work with changes from multiple developers and branches  
-**Time:** 30-40 minutes | **Difficulty:** Intermediate  
-**Prerequisites:** Flyway Desktop, Git branching knowledge  
-**Topics:** Branch merging, conflict resolution, team collaboration, synchronizing changes
+#### 🟢 02 - Configure Flyway Desktop
+**What you'll learn:** Connect Flyway Desktop to your development database  
+**Time:** 20-25 minutes | **Difficulty:** Beginner  
+**Prerequisites:** Completed Quest 01, access to development database  
+**Topics:** User settings, project settings, authentication, connection configuration
 
-Learn to merge database changes from different branches and synchronize your development database with changes from your team.
+Configure Flyway Desktop connections securely and understand what should/shouldn't be committed to Git.
 
-**📁 Location:** `Development/Merging-Changes/`
+**📁 Location:** `Development/02-Configure-Flyway-Desktop/`
 
 ---
 
-#### 🟡 Schema Normalization
-**What you'll learn:** Refactor schemas while maintaining data integrity  
-**Time:** 35-45 minutes | **Difficulty:** Intermediate  
-**Prerequisites:** Understanding of Flyway migrations, SQL DDL  
-**Topics:** Database normalization, safe refactoring, data migration, multi-step changes
+#### 🟡 03 - Validate Environment Sync
+**What you'll learn:** Verify dev database matches schema model  
+**Time:** 25-30 minutes | **Difficulty:** Intermediate  
+**Prerequisites:** Completed Quest 02, Flyway Desktop connected  
+**Topics:** Drift detection, synchronization, comparison, state validation
 
-Practice normalizing denormalized schemas using Flyway's migration workflow.
+Critical validation step - ensure your database is in sync with the schema model before starting work.
 
-**📁 Location:** `Development/Schema-Normalization/`
+**📁 Location:** `Development/03-Validate-Environment-Sync/`
+
+---
+
+#### 🟢 04 - Capture New Changes
+**What you'll learn:** Make schema changes and capture them into schema model  
+**Time:** 20-25 minutes | **Difficulty:** Beginner  
+**Prerequisites:** Completed Quest 03, environment in sync  
+**Topics:** State-based workflow, detecting changes, schema model capture
+
+Create new database objects and use Flyway Desktop to capture them into the schema model.
+
+**📁 Location:** `Development/04-Capture-New-Changes/`
+
+---
+
+#### 🟢 05 - Commit and Push
+**What you'll learn:** Commit captured changes to Git and share with team  
+**Time:** 15-20 minutes | **Difficulty:** Beginner  
+**Prerequisites:** Completed Quest 04, captured changes exist  
+**Topics:** Git workflow, commit messages, pushing changes, branching basics
+
+Learn to commit schema model changes to Git with clear messages and push to the remote repository.
+
+**📁 Location:** `Development/05-Commit-and-Push/`
+
+---
+
+#### 🟢 06 - Modify Existing Object
+**What you'll learn:** Modify existing database objects and recapture state  
+**Time:** 15-20 minutes | **Difficulty:** Beginner  
+**Prerequisites:** Completed Quests 04-05  
+**Topics:** Modifying objects, recapturing state, state-based mindset
+
+Modify an existing table and recapture its updated definition - reinforcing state-based thinking.
+
+**📁 Location:** `Development/06-Modify-Existing-Object/`
+
+---
+
+#### 🟡 07 - Track Static Data
+**What you'll learn:** Version control reference and configuration data  
+**Time:** 25-30 minutes | **Difficulty:** Intermediate  
+**Prerequisites:** Flyway Desktop configured, understanding of schema model  
+**Topics:** Static data tracking, reference data, data vs. schema
+
+Configure Flyway to track reference data (lookup tables, configuration) alongside schema changes.
+
+**📁 Location:** `Development/07-Track-Static-Data/`
+
+---
+
+#### 🟡 08 - Feature Branch Workflow
+**What you'll learn:** Work in isolated feature branches  
+**Time:** 20-25 minutes | **Difficulty:** Intermediate  
+**Prerequisites:** Completed Quests 04-05, basic Git knowledge  
+**Topics:** Feature branches, isolated development, branch switching
+
+Create feature branches for database development and avoid accidental commits to wrong branches.
+
+**📁 Location:** `Development/08-Feature-Branch-Workflow/`
+
+---
+
+#### 🟡 09 - Filtering
+**What you'll learn:** Control what Flyway compares and captures  
+**Time:** 25-30 minutes | **Difficulty:** Intermediate  
+**Prerequisites:** Flyway Desktop configured, completed Quest 03  
+**Topics:** Schema filters, object filters, comparison scope, noise reduction
+
+Configure filters to include only relevant schemas/objects and exclude system objects and other teams' work.
+
+**📁 Location:** `Development/09-Filtering/`
+
+---
+
+#### 🟡 10 - Pull Changes from Git
+**What you'll learn:** Synchronize database with teammates' schema changes  
+**Time:** 20-25 minutes | **Difficulty:** Intermediate  
+**Prerequisites:** Completed Quest 05, Git pull knowledge  
+**Topics:** Pulling changes, synchronizing database, team collaboration
+
+Pull schema model changes from teammates and synchronize your development database.
+
+**📁 Location:** `Development/10-Pull-Changes/`
+
+---
+
+#### 🟡 11 - Placeholders
+**What you'll learn:** Use placeholders for environment-specific values  
+**Time:** 20-25 minutes | **Difficulty:** Intermediate  
+**Prerequisites:** Understanding of flyway.toml, completed basic quests  
+**Topics:** Placeholders, environment configuration, dynamic values
+
+Handle differences between Dev/Test/Production using Flyway placeholders in database objects.
+
+**📁 Location:** `Development/11-Placeholders/`
 
 ---
 
 ### 🔧 Operations Quests
 
-#### 🟡 00_Diff - Compare Environments
+#### 🟡 Compare Environments
 **What you'll learn:** Detect schema drift and compare database states  
 **Time:** 20-25 minutes | **Difficulty:** Intermediate  
 **Prerequisites:** Flyway CLI installed, schema model configured  
@@ -95,11 +179,11 @@ Practice normalizing denormalized schemas using Flyway's migration workflow.
 
 Use `flyway diff` to compare your schema model against target environments and identify differences.
 
-**📁 Location:** `Operations/00_Diff/`
+**📁 Location:** `Operations/Compare-Environments/`
 
 ---
 
-#### 🟡 01_Model - Validate Schema Model
+#### 🟡 Validate Schema Model
 **What you'll learn:** Ensure your schema model is valid and deployable  
 **Time:** 20-25 minutes | **Difficulty:** Intermediate  
 **Prerequisites:** Flyway CLI installed, schema model exists  
@@ -107,31 +191,31 @@ Use `flyway diff` to compare your schema model against target environments and i
 
 Validate your schema model to catch issues before generating deployment scripts.
 
-**📁 Location:** `Operations/01_Model/`
+**📁 Location:** `Operations/Validate-Schema-Model/`
 
 ---
 
-#### 🟡 02_Prepare - Generate Deployment Script
+#### 🟡 Generate Deployment Script
 **What you'll learn:** Create deployment migration scripts from your schema model  
 **Time:** 25-30 minutes | **Difficulty:** Intermediate  
-**Prerequisites:** Completed 00_Diff and 01_Model quests  
+**Prerequisites:** Completed Compare-Environments and Validate-Schema-Model quests  
 **Topics:** Migration generation, versioned scripts, deployment preparation, flyway generate command
 
 Generate versioned deployment scripts that transform your target database to match your schema model.
 
-**📁 Location:** `Operations/02_Prepare/`
+**📁 Location:** `Operations/Generate-Deployment-Script/`
 
 ---
 
-#### 🟡 03_Deploy - Execute Deployment
+#### 🟡 Execute Deployment
 **What you'll learn:** Deploy changes to target environments safely  
 **Time:** 20-30 minutes | **Difficulty:** Intermediate  
-**Prerequisites:** Completed 00_Diff, 01_Model, and 02_Prepare quests  
+**Prerequisites:** Completed Compare-Environments, Validate-Schema-Model, and Generate-Deployment-Script quests  
 **Topics:** Migration execution, deployment verification, rollback strategies, flyway migrate command
 
 Execute generated deployment scripts and verify successful deployment to target environments.
 
-**📁 Location:** `Operations/03_Deploy/`
+**📁 Location:** `Operations/Execute-Deployment/`
 
 ---
 
@@ -247,10 +331,10 @@ Perfect for SQL developers learning Flyway's development workflow:
 
 ### Path 2: Operations & Deployment (State-Based CLI Workflow)
 For DevOps engineers and DBAs handling deployments using Flyway CLI:
-1. `Operations/00_Diff` - Compare environments and detect drift
-2. `Operations/01_Model` - Validate schema model
-3. `Operations/02_Prepare` - Generate deployment scripts
-4. `Operations/03_Deploy` - Execute deployments
+1. `Operations/Compare-Environments` - Compare environments and detect drift
+2. `Operations/Validate-Schema-Model` - Validate schema model
+3. `Operations/Generate-Deployment-Script` - Generate deployment scripts
+4. `Operations/Execute-Deployment` - Execute deployments
 5. `Operations/Deployment-Validation` - Add safety checks to CI/CD pipelines
 
 ### Path 3: POC Scenario Testing
