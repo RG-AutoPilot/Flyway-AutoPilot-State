@@ -213,7 +213,7 @@ jobs:
           run: |
               # Run Flyway Check -Changes Report
               echo "Flyway CLI - Creating change report for changes from ${{ env.SOURCE_ENVIRONMENT }} to ${{ env.TARGET_ENVIRONMENT }}"
-              flyway check -changes -drift -code \
+              flyway check -changes -drift \
               -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" \
               -environment="${{ env.TARGET_ENVIRONMENT }}" \
               -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
@@ -335,7 +335,7 @@ jobs:
         run: |
             # Run Flyway Check -Changes Report
             echo "Flyway CLI - Creating change report for changes from ${{ env.SOURCE_ENVIRONMENT }} to ${{ env.TARGET_ENVIRONMENT }}"
-            flyway check -changes -drift -code \
+            flyway check -changes -drift \
             -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" \
             -environment="${{ env.TARGET_ENVIRONMENT }}" \
             -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \

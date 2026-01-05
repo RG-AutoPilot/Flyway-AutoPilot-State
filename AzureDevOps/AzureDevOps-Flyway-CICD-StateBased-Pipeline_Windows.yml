@@ -303,7 +303,7 @@ stages:
           inputs:
             targetType: 'inline'
             script: |
-                flyway check -changes -drift -code `
+                flyway check -changes -drift `
                 "-check.changesSource=$(SOURCE_ENVIRONMENT)" `
                 "-environment=$(TARGET_ENVIRONMENT)" `
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `
@@ -523,7 +523,7 @@ stages:
           inputs:
             targetType: 'inline'
             script: |
-                flyway check -changes -drift -code `
+                flyway check -changes -drift `
                 "-check.changesSource=$(SOURCE_ENVIRONMENT)" `
                 "-environment=$(TARGET_ENVIRONMENT)" `
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `

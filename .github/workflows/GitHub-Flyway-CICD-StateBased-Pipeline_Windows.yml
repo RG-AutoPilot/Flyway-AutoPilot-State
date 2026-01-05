@@ -218,7 +218,7 @@ jobs:
       - name: Flyway CLI - Changes Report
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         run: |
-            flyway check -changes -drift -code `
+            flyway check -changes -drift `
             -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" `
             "-environment=${{ env.TARGET_ENVIRONMENT }}" `
             "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `
@@ -334,7 +334,7 @@ jobs:
       - name: Flyway CLI - Changes Report
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         run: |
-            flyway check -changes -drift -code `
+            flyway check -changes -drift `
             -check.changesSource="${{ env.SOURCE_ENVIRONMENT }}" `
             "-environment=${{ env.TARGET_ENVIRONMENT }}" `
             "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `

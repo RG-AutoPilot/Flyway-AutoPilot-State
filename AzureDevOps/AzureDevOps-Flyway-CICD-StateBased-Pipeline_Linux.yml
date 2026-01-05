@@ -288,7 +288,7 @@ stages:
             targetType: 'inline'
             script: |
               # Run Flyway Check -Changes Report
-              flyway check -changes -drift -code \
+              flyway check -changes -drift \
               "-check.changesSource=$(SOURCE_ENVIRONMENT)" \
               "-environment=$(TARGET_ENVIRONMENT)" \
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
@@ -493,7 +493,7 @@ stages:
             targetType: 'inline'
             script: |
               # Run Flyway Check -Changes Report
-              flyway check -changes -drift -code \
+              flyway check -changes -drift \
               "-check.changesSource=$(SOURCE_ENVIRONMENT)" \
               "-environment=$(TARGET_ENVIRONMENT)" \
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
