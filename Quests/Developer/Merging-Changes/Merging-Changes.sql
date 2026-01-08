@@ -42,6 +42,7 @@ CREATE TABLE Sales.LoyaltyTransaction (
 
 -- 4. Calculate Loyalty Points Function
 -- Calculates points based on purchase amount and program rules
+-- Returns 0 if program is not found or inactive
 CREATE FUNCTION Sales.CalculateLoyaltyPoints(
     @PurchaseAmount DECIMAL(10,2),
     @ProgramID INT
@@ -52,12 +53,13 @@ BEGIN
     DECLARE @Points INT;
     DECLARE @PointsPerDollar DECIMAL(5,2);
     
-    -- Get the points per dollar for the program
+    -- Get the points per dollar for the program (NULL if not found or inactive)
     SELECT @PointsPerDollar = PointsPerDollar
     FROM Sales.LoyaltyProgram
     WHERE ProgramID = @ProgramID AND IsActive = 1;
     
-    -- Calculate points (round down to nearest integer)
+    -- Calculate points (defaults to 1.0 points per dollar if program not found)
+    -- Round down to nearest integer
     SET @Points = FLOOR(@PurchaseAmount * ISNULL(@PointsPerDollar, 1.0));
     
     RETURN @Points;

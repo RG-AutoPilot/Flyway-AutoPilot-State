@@ -4,7 +4,7 @@
 
 **Difficulty:** Intermediate  
 **Time:** 30-40 minutes  
-**Prerequisites:** Flyway Desktop, Git branching knowledge, Git repository connected
+**Prerequisites:** Flyway Desktop, Git branching knowledge, and Git repository connected
 
 ## Learning Objectives
 By completing this quest, you will learn:
@@ -123,10 +123,12 @@ BEGIN
     DECLARE @Points INT;
     DECLARE @PointsPerDollar DECIMAL(5,2);
     
+    -- Get the points per dollar for the program
     SELECT @PointsPerDollar = PointsPerDollar
     FROM Sales.LoyaltyProgram
     WHERE ProgramID = @ProgramID AND IsActive = 1;
     
+    -- Calculate points (defaults to 1.0 if program not found)
     SET @Points = FLOOR(@PurchaseAmount * ISNULL(@PointsPerDollar, 1.0));
     
     RETURN @Points;
@@ -191,9 +193,7 @@ git add migrations/V013__Add_loyalty_rewards_program.sql
 git add migrations/
 
 # Commit with a descriptive message
-git commit -m "Add loyalty rewards program database objects
-
-- Created LoyaltyProgram table to define reward programs
+git commit -m "Add loyalty rewards program database objects" -m "- Created LoyaltyProgram table to define reward programs
 - Created CustomerLoyalty table to track enrollments
 - Created LoyaltyTransaction table to record points activity
 - Added CalculateLoyaltyPoints function for point calculations"
