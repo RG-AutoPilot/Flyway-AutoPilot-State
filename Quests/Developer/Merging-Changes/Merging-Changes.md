@@ -1,302 +1,340 @@
 **RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
 
-# Developer Quest - Merging Pending Changes
+# Developer Quest - Merging Changes with Git Branches
 
 **Difficulty:** Intermediate  
 **Time:** 30-40 minutes  
-**Prerequisites:** Flyway Desktop, Git branching knowledge
+**Prerequisites:** Flyway Desktop, Git branching knowledge, Git repository connected
 
 ## Learning Objectives
 By completing this quest, you will learn:
-- Managing multiple pending database changes
-- Selective migration generation in Flyway Desktop
-- Schema filtering to include/exclude objects
-- Validating migrations before committing
-- Handling concurrent development scenarios
-- Best practices for branch-based database development
+- How to switch Git branches in Flyway Desktop
+- Making database changes on a feature branch
+- Generating migrations on the correct branch
+- Committing and pushing branch-specific changes
+- Managing branch-based database development workflow
+- Best practices for merging database changes
 
 ## Scenario
-Your team has been working on two major features in parallel:
-- **Marketing Team**: Created several objects in the `Marketing` schema for a new campaign analytics system
-- **Finance Team**: Created objects in the `Finance` schema for budget tracking
+You're working on a new feature for customer loyalty rewards. Your team uses Git feature branches to isolate development work. You need to:
+1. Create a new feature branch for the loyalty program
+2. Switch to that branch in Flyway Desktop
+3. Make database changes for the feature
+4. Generate a migration on the feature branch
+5. Commit and push your changes to the branch
 
-Both teams have been making changes in a shared development environment, and now it's time to promote the Marketing changes to Test and Production. However, the Finance changes are NOT ready yet and must be excluded.
-
-Your task is to carefully select only the Marketing schema objects and generate a clean migration script, ensuring no Finance objects leak into this release.
+This workflow ensures that your database changes are isolated from the main branch until they're ready to be merged, just like your application code.
 
 ## Your Mission
-Generate a single migration script that includes ALL Marketing schema objects but EXCLUDES all Finance schema objects.
+Use Flyway Desktop to switch to a feature branch, create database objects for a loyalty rewards program, generate a migration, and commit/push the changes to the branch.
 
 ## Objective
-1. Review all pending database changes
-2. Use Flyway Desktop to selectively include only Marketing schema objects
-3. Generate a single, consolidated migration script
-4. Validate the migration before committing
-5. Ensure no Finance objects are accidentally included
+1. Create a new Git feature branch for the loyalty rewards feature
+2. Switch to the feature branch in Flyway Desktop
+3. Create database objects for the loyalty program
+4. Generate a migration on the feature branch using Flyway Desktop
+5. Commit and push the migration to the feature branch
+6. Understand how to merge changes back to main
 
-## Objects Overview
+## Objects to Create
 
-### ✅ Marketing Schema (INCLUDE):
-- `Marketing.CustomerFeedback` (Table)
-- `Marketing.CampaignAnalytics` (Table)
-- `Marketing.GetCustomerFeedback` (Stored Procedure)
-- `Marketing.GetAverageCampaignCTR` (Function)
-
-### ❌ Finance Schema (EXCLUDE):
-- `Finance.BudgetAllocations` (Table)
-- `Finance.GetBudgetForDepartment` (Stored Procedure)
+### Loyalty Rewards Schema Objects:
+- `Sales.LoyaltyProgram` (Table) - Stores loyalty program definitions
+- `Sales.CustomerLoyalty` (Table) - Tracks customer enrollment and points
+- `Sales.LoyaltyTransaction` (Table) - Records points earned/redeemed
+- `Sales.CalculateLoyaltyPoints` (Function) - Calculates points for a purchase
 
 ## Steps
 
-### Step 1: Review Pending Changes
+### Step 1: Create and Switch to Feature Branch
 
-**Option A: Using Flyway Desktop**
+**Option A: Using Git Command Line**
+```bash
+# Create a new feature branch
+git checkout -b feature/loyalty-rewards
+
+# Verify you're on the new branch
+git branch
+```
+
+**Option B: Using Flyway Desktop**
 1. Open Flyway Desktop
-2. Navigate to the **Schema Model** tab
-3. Click **"Review Changes"** or **"Generate Migration"**
-4. You'll see all pending changes across both schemas
+2. Look for the **Git branch selector** (usually in the top toolbar or sidebar)
+3. Click **"New Branch"** or **"Create Branch"**
+4. Name it: `feature/loyalty-rewards`
+5. Click **"Create and Switch"** or **"Checkout"**
 
-**Option B: Using SQL Queries**
+**Verify Branch Switch**:
+- Flyway Desktop should show you're now on `feature/loyalty-rewards`
+- Any migrations you generate will be committed to this branch
+
+### Step 2: Create the Database Objects
+
+Run the setup SQL script provided (`Merging-Changes.sql`) to create the loyalty program objects in your development database:
+
 ```sql
--- List all objects in Marketing schema
-SELECT 
-    name AS ObjectName,
-    type_desc AS ObjectType,
-    create_date,
-    modify_date
-FROM sys.objects
-WHERE schema_id = SCHEMA_ID('Marketing')
-ORDER BY type_desc, name;
-
--- List all objects in Finance schema
-SELECT 
-    name AS ObjectName,
-    type_desc AS ObjectType,
-    create_date,
-    modify_date
-FROM sys.objects
-WHERE schema_id = SCHEMA_ID('Finance')
-ORDER BY type_desc, name;
+-- This script creates the loyalty rewards schema objects
+-- Run this in SSMS or Azure Data Studio
 ```
 
-### Step 2: Generate Selective Migration in Flyway Desktop
-
-1. **Open Migration Generation**:
-   - Click **"Generate Migration"** in Flyway Desktop
-   - Review the list of detected changes
-
-2. **Filter by Schema**:
-   - Look for schema filter/selection options
-   - Select ONLY the `Marketing` schema
-   - OR manually deselect all Finance objects
-
-3. **Review Selected Objects**:
-   Verify only these objects are selected:
-   - ✅ Marketing.CustomerFeedback
-   - ✅ Marketing.CampaignAnalytics
-   - ✅ Marketing.GetCustomerFeedback
-   - ✅ Marketing.GetAverageCampaignCTR
-
-4. **Generate the Migration**:
-   - Provide description: "Add Marketing campaign analytics features"
-   - Generate the script
-   - File: `V012__Add_marketing_campaign_analytics.sql`
-
-### Step 3: Validate the Generated Migration
+Or create them manually:
 
 ```sql
--- Review the generated migration script
--- It should contain:
+-- 1. Loyalty Program Table
+CREATE TABLE Sales.LoyaltyProgram (
+    ProgramID INT IDENTITY(1,1) PRIMARY KEY,
+    ProgramName NVARCHAR(100) NOT NULL,
+    PointsPerDollar DECIMAL(5,2) NOT NULL DEFAULT 1.0,
+    StartDate DATE NOT NULL,
+    EndDate DATE NULL,
+    IsActive BIT NOT NULL DEFAULT 1
+);
 
--- 1. Table Creations
-CREATE TABLE Marketing.CustomerFeedback (
-    FeedbackID INT IDENTITY(1,1) PRIMARY KEY,
+-- 2. Customer Loyalty Table
+CREATE TABLE Sales.CustomerLoyalty (
+    CustomerLoyaltyID INT IDENTITY(1,1) PRIMARY KEY,
     CustomerID INT NOT NULL,
-    CampaignID INT NOT NULL,
-    FeedbackText NVARCHAR(MAX),
-    Rating INT CHECK (Rating BETWEEN 1 AND 5),
-    FeedbackDate DATETIME DEFAULT GETDATE()
+    ProgramID INT NOT NULL,
+    TotalPoints INT NOT NULL DEFAULT 0,
+    EnrollmentDate DATE NOT NULL DEFAULT GETDATE(),
+    LastActivityDate DATE NULL,
+    FOREIGN KEY (ProgramID) REFERENCES Sales.LoyaltyProgram(ProgramID)
 );
 
-CREATE TABLE Marketing.CampaignAnalytics (
-    AnalyticsID INT IDENTITY(1,1) PRIMARY KEY,
-    CampaignID INT NOT NULL,
-    Impressions INT DEFAULT 0,
-    Clicks INT DEFAULT 0,
-    Conversions INT DEFAULT 0,
-    AnalyticsDate DATE DEFAULT CAST(GETDATE() AS DATE)
+-- 3. Loyalty Transaction Table
+CREATE TABLE Sales.LoyaltyTransaction (
+    TransactionID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerLoyaltyID INT NOT NULL,
+    TransactionType NVARCHAR(20) NOT NULL CHECK (TransactionType IN ('Earned', 'Redeemed')),
+    Points INT NOT NULL,
+    TransactionDate DATETIME NOT NULL DEFAULT GETDATE(),
+    Description NVARCHAR(200),
+    FOREIGN KEY (CustomerLoyaltyID) REFERENCES Sales.CustomerLoyalty(CustomerLoyaltyID)
 );
 
--- 2. Stored Procedure
-CREATE PROCEDURE Marketing.GetCustomerFeedback
-    @CampaignID INT
+-- 4. Calculate Loyalty Points Function
+CREATE FUNCTION Sales.CalculateLoyaltyPoints(
+    @PurchaseAmount DECIMAL(10,2),
+    @ProgramID INT
+)
+RETURNS INT
 AS
 BEGIN
-    SELECT 
-        FeedbackID,
-        CustomerID,
-        FeedbackText,
-        Rating,
-        FeedbackDate
-    FROM Marketing.CustomerFeedback
-    WHERE CampaignID = @CampaignID
-    ORDER BY FeedbackDate DESC;
-END;
-
--- 3. Function
-CREATE FUNCTION Marketing.GetAverageCampaignCTR(@CampaignID INT)
-RETURNS DECIMAL(5,2)
-AS
-BEGIN
-    DECLARE @CTR DECIMAL(5,2);
+    DECLARE @Points INT;
+    DECLARE @PointsPerDollar DECIMAL(5,2);
     
-    SELECT @CTR = 
-        CASE 
-            WHEN Impressions > 0 THEN (CAST(Clicks AS DECIMAL(10,2)) / Impressions) * 100
-            ELSE 0 
-        END
-    FROM Marketing.CampaignAnalytics
-    WHERE CampaignID = @CampaignID;
+    SELECT @PointsPerDollar = PointsPerDollar
+    FROM Sales.LoyaltyProgram
+    WHERE ProgramID = @ProgramID AND IsActive = 1;
     
-    RETURN ISNULL(@CTR, 0);
+    SET @Points = FLOOR(@PurchaseAmount * ISNULL(@PointsPerDollar, 1.0));
+    
+    RETURN @Points;
 END;
 ```
 
-**Important**: Search the script for "Finance" to ensure nothing leaked in:
-```sql
--- This should return NO results
-SELECT * FROM sys.objects WHERE name LIKE '%Finance%';
-```
+### Step 3: Generate Migration on Feature Branch
 
-### Step 4: Validate with Flyway Validate Command
+1. **Open Flyway Desktop**
+   - Ensure you're still on the `feature/loyalty-rewards` branch
+   - The branch indicator should be visible in the UI
 
+2. **Navigate to Schema Model**
+   - Click on the **Schema Model** tab
+   - Flyway Desktop compares your database to the schema model
+
+3. **Review Detected Changes**
+   - Click **"Generate Migration"** or **"Review Changes"**
+   - You should see all four new objects detected:
+     - ✅ Sales.LoyaltyProgram (Table)
+     - ✅ Sales.CustomerLoyalty (Table)
+     - ✅ Sales.LoyaltyTransaction (Table)
+     - ✅ Sales.CalculateLoyaltyPoints (Function)
+
+4. **Generate the Migration**
+   - Provide a description: "Add loyalty rewards program"
+   - Flyway will create a versioned migration file
+   - Example: `V013__Add_loyalty_rewards_program.sql`
+   - Review the generated SQL to ensure it matches your changes
+
+5. **Verify Migration Content**
+   - The migration should include CREATE statements for all objects
+   - Check that foreign key relationships are correct
+   - Ensure the function definition is complete
+
+### Step 4: Commit Changes to Feature Branch
+
+**Using Flyway Desktop Git Integration**:
+1. In Flyway Desktop, look for **Git/Source Control** panel
+2. You should see the new migration file listed as uncommitted
+3. Review the changes
+4. Write a commit message:
+   ```
+   Add loyalty rewards program database objects
+   
+   - Created LoyaltyProgram table to define reward programs
+   - Created CustomerLoyalty table to track enrollments
+   - Created LoyaltyTransaction table to record points activity
+   - Added CalculateLoyaltyPoints function for point calculations
+   ```
+5. Click **"Commit"** to commit to the feature branch
+
+**Or using Git Command Line**:
 ```bash
-# Run Flyway validation
-flyway validate
+# Check what files changed
+git status
 
-# Expected output:
-# Successfully validated X migrations
+# Add the new migration file
+git add migrations/V013__Add_loyalty_rewards_program.sql
+
+# Or add all migration files
+git add migrations/
+
+# Commit with a descriptive message
+git commit -m "Add loyalty rewards program database objects
+
+- Created LoyaltyProgram table to define reward programs
+- Created CustomerLoyalty table to track enrollments
+- Created LoyaltyTransaction table to record points activity
+- Added CalculateLoyaltyPoints function for point calculations"
 ```
 
-This checks:
-- Migration naming conventions
-- Script checksums
-- Correct ordering
-- No conflicts with existing migrations
+### Step 5: Push Changes to Remote Branch
 
-### Step 5: Test the Migration Locally
+**Using Flyway Desktop**:
+1. After committing, look for a **"Push"** button
+2. Click **"Push"** to send your commits to the remote repository
+3. Confirm the push was successful
 
+**Or using Git Command Line**:
 ```bash
-# Apply migration to local dev database
-flyway migrate
+# Push the feature branch to remote
+git push origin feature/loyalty-rewards
 
-# Verify objects were created
-flyway info
+# Or if it's your first push of this branch
+git push -u origin feature/loyalty-rewards
 ```
 
-Or use SQL:
-```sql
--- Verify Marketing objects exist
-SELECT name, type_desc
-FROM sys.objects
-WHERE schema_id = SCHEMA_ID('Marketing')
-ORDER BY type_desc, name;
+**Verify the Push**:
+- Check your Git hosting platform (GitHub, GitLab, etc.)
+- Navigate to the `feature/loyalty-rewards` branch
+- Confirm the migration file is present
+- Verify the commit message appears in the branch history
 
--- Verify NO Finance objects were created
-SELECT COUNT(*) AS FinanceObjectCount
-FROM sys.objects
-WHERE schema_id = SCHEMA_ID('Finance');
--- Should be 0 (or unchanged from before)
-```
+### Step 6: Understanding the Merge Process
 
-### Step 6: Commit to Source Control
+While merging is typically done through pull requests, here's what happens:
 
-```bash
-git add migrations/V012__Add_marketing_campaign_analytics.sql
-git commit -m "Add Marketing campaign analytics features
+1. **Create Pull Request**:
+   - Go to your Git hosting platform
+   - Create a PR from `feature/loyalty-rewards` to `main`
+   - Review the database migration changes
 
-- Created CustomerFeedback table
-- Created CampaignAnalytics table
-- Added GetCustomerFeedback stored procedure
-- Added GetAverageCampaignCTR function
+2. **Code Review**:
+   - Team members review the migration script
+   - Check for schema conflicts
+   - Validate the approach
 
-Excludes Finance schema objects which are not ready for release."
-git push
-```
+3. **Merge**:
+   - Once approved, merge the PR
+   - The migration file becomes part of the main branch
+   - Flyway will apply it in the next deployment
+
+4. **Branch Cleanup**:
+   ```bash
+   # After merge, delete local branch
+   git checkout main
+   git pull
+   git branch -d feature/loyalty-rewards
+   
+   # Delete remote branch
+   git push origin --delete feature/loyalty-rewards
+   ```
 
 ## Hints
-- **Schema Filtering**: Most migration tools let you filter by schema
-- **Double-Check**: Always review generated scripts before committing
-- **Validation First**: Run `flyway validate` before `flyway migrate`
-- **Dependencies**: Ensure Marketing objects don't depend on Finance objects
-- **Naming**: Use descriptive migration names that indicate what's included
+- **Branch Visibility**: Always verify which branch you're on before generating migrations
+- **Flyway Desktop Integration**: Modern versions of Flyway Desktop show the active Git branch
+- **Migration Versioning**: Each branch can have its own migrations; version numbers should be coordinated
+- **Sync Regularly**: Pull changes from main regularly to avoid merge conflicts
+- **Test Migrations**: Always test on a clean database before pushing
 
 ## Key Concepts Learned
-- **Selective Migration**: Choose which objects to include
-- **Schema Isolation**: Keep different feature sets separate
-- **Migration Validation**: Check scripts before deployment
-- **Concurrent Development**: Multiple teams working simultaneously
-- **Release Management**: Control what gets deployed when
+- **Branch-Based Development**: Isolating database changes on feature branches
+- **Git Integration in Flyway Desktop**: Using version control directly in the tool
+- **Migration on Branches**: How migrations are tied to Git branches
+- **Commit and Push Workflow**: Proper Git workflow for database changes
+- **Merge Preparation**: Understanding how branches eventually merge
 
 ## Common Pitfalls to Avoid
-❌ **Including unwanted objects**: Deploying unfinished features  
-✅ **Solution**: Carefully review the object selection list
+❌ **Generating migrations on wrong branch**: Creates migrations on main instead of feature branch  
+✅ **Solution**: Always verify active branch before generating migrations
 
-❌ **Missing dependencies**: Marketing objects reference Finance objects  
-✅ **Solution**: Check for cross-schema dependencies before migrating
+❌ **Forgetting to push**: Commits locally but doesn't share with team  
+✅ **Solution**: Always push after committing
 
-❌ **Skipping validation**: Deploying broken migrations  
-✅ **Solution**: Always run `flyway validate` first
+❌ **Version number conflicts**: Two branches use the same version number  
+✅ **Solution**: Coordinate version numbers or use Flyway's timestamp-based versioning
 
-❌ **No testing**: Migration works in dev but fails in test  
-✅ **Solution**: Test migrations in a clean environment
+❌ **Not syncing with main**: Branch gets too far behind main  
+✅ **Solution**: Regularly merge main into your feature branch
 
 ## Success Criteria
-✅ Generated migration includes ALL Marketing objects  
-✅ Generated migration includes NO Finance objects  
-✅ Migration script validated with `flyway validate`  
-✅ Migration tested locally and all objects created successfully  
-✅ No dependencies on Finance schema exist  
-✅ Migration committed to source control with clear description  
-✅ Running `flyway info` shows the new migration
+✅ Created feature branch `feature/loyalty-rewards`  
+✅ Switched to the feature branch in Flyway Desktop  
+✅ Generated migration with all loyalty program objects  
+✅ Migration file created in correct location  
+✅ Changes committed to feature branch with clear message  
+✅ Feature branch pushed to remote repository  
+✅ Can see migration in feature branch on Git hosting platform  
+✅ Understand how to merge changes back to main via pull request
 
 ## Troubleshooting
-- **Can't filter schemas**: Generate full script, then manually edit (not recommended)
-- **Dependencies found**: Discuss with teams about cross-schema references
-- **Validation fails**: Check migration script for syntax errors
-- **Objects missing**: Ensure schema model is up-to-date in Flyway Desktop
+- **Can't see Git features in Flyway Desktop**: Ensure your project is initialized as a Git repository
+- **Branch not showing**: Refresh Flyway Desktop or restart it
+- **Push fails**: Check your Git credentials and remote repository access
+- **Migration appears on wrong branch**: Use `git checkout` to switch branches, then regenerate
+- **Merge conflicts**: Coordinate with team on migration version numbers
 
 ## Advanced Scenarios
 
-### Scenario 1: Cross-Schema Dependencies
-What if Marketing needs a Finance table? Options:
-1. Include the dependency in this migration
-2. Coordinate release timing with Finance team
-3. Create a stub/mock Finance object temporarily
+### Scenario 1: Multiple Developers on Same Feature
+When multiple developers work on the same feature branch:
+1. Pull latest changes before creating new objects: `git pull origin feature/loyalty-rewards`
+2. Communicate about who generates migrations when
+3. Merge local changes before pushing
 
-### Scenario 2: Shared Objects
-What if both teams modified the same table?
-1. Merge changes carefully
-2. Coordinate with both teams
-3. Test thoroughly with both feature sets
+### Scenario 2: Long-Running Feature Branch
+For features that take weeks to develop:
+1. Regularly merge main into your feature branch:
+   ```bash
+   git checkout feature/loyalty-rewards
+   git merge main
+   ```
+2. Resolve any migration conflicts
+3. Test thoroughly after merging
 
-### Scenario 3: Large Change Sets
-What if there are 50+ objects?
-1. Break into multiple migrations by feature
-2. Use scripting to generate migrations
-3. Automate validation testing
+### Scenario 3: Hotfix While on Feature Branch
+If you need to make a hotfix:
+1. Commit or stash your feature branch work
+2. Switch to main: `git checkout main`
+3. Create hotfix branch: `git checkout -b hotfix/critical-fix`
+4. Make changes, commit, push
+5. Return to feature branch: `git checkout feature/loyalty-rewards`
 
 ## Real-World Applications
-- **Feature Branching**: Each feature in its own schema during development
-- **Multi-Team Coordination**: Large organizations with parallel development
-- **Staged Rollouts**: Deploy features incrementally
-- **Compliance**: Ensure only approved changes reach production
+- **Feature Isolation**: Keep new features separate until ready to release
+- **Parallel Development**: Multiple teams working on different features simultaneously
+- **Code Review**: Changes reviewed before merging to main
+- **Rollback Safety**: Easy to discard feature branch if not needed
+- **Release Management**: Control when features go to production
 
-## Testing Your Selection Skills
+## Testing Your Branch Skills
 After completing this quest, try:
-1. Generate another migration for just the Finance objects
-2. Create a migration that includes objects from both schemas
-3. Filter by object type (only tables, only procedures)
+1. Create a second feature branch for a different feature
+2. Switch between branches in Flyway Desktop
+3. Generate different migrations on different branches
+4. Practice merging one feature branch to main
+5. Handle a merge conflict between two feature branches
 
 ## Next Steps
-Great work on managing concurrent changes! Explore other Operations quests to learn about performance optimization with indexes and computed columns!
+Great work mastering branch-based database development! Explore other Developer quests to learn about stored procedures, static data, and schema normalization!
