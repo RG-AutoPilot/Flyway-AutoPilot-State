@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Flyway Quests - Your Learning Journey
 
 ## 🎯 About Flyway Quests
@@ -826,4 +825,5 @@ Advanced scenario showing how Flyway handles complex dependencies across schema 
 - Complex dependency graph analysis
 
 ---
+
 >>>>>>> Stashed changes
