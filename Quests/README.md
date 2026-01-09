@@ -39,14 +39,14 @@ Create and test various database scenarios - stored procedures, constraints, cro
 **Pick by what you need to learn, not by order!** Each quest is self-contained:
 
 **New to Flyway?**
-- Start with `Development/First-Capture` to learn the basics
+- Start with `Development/Capture-New-Changes` to learn the basics
 - Then try `Development/Static-Data` to handle reference data
 
 **Working in a team?**
 - `Development/Merging-Changes` shows how to handle concurrent development
 
-**Setting up CI/CD?**
-- `Operations/Deployment-Validation` teaches deployment safety checks
+**Setting up CI/CD and want to learn the CLI?**
+- `Operations` teaches deployment through the CLI, and automating safely.
 
 **Testing scenarios during POC?**
 - Explore `Scenarios/` to see how Flyway handles different database objects
@@ -63,7 +63,7 @@ Create and test various database scenarios - stored procedures, constraints, cro
 
 Each quest folder contains:
 - 📄 **{QuestName}.md** - Step-by-step guide with explanations
-- 📄 **{QuestName}.sql** - Setup script to create the scenario
+- 📄 **{QuestName}.sql** - Setup script to create the scenario (Sometimes this wont exist and all is managed through MD)
 
 **Always run the .sql file first!** It creates the tables, data, or scenario you'll be working with.
 
@@ -92,31 +92,6 @@ Every quest guide includes:
 - Don't rush through scenarios without understanding
 - Don't ignore error messages - they're learning opportunities
 - Don't be afraid to experiment - you have sample databases for a reason
-
----
-
-## 🎓 Learning Paths
-
-### Path 1: Developer Workflow Mastery
-Perfect for SQL developers learning Flyway's development workflow:
-1. `Development/First-Capture` - Learn the basics
-2. `Development/Static-Data` - Handle reference data
-3. `Development/Merging-Changes` - Work with a team
-4. `Development/Schema-Normalization` - Advanced refactoring
-
-### Path 2: Operations & Deployment (State-Based CLI Workflow)
-For DevOps engineers and DBAs handling deployments using Flyway CLI:
-1. `Operations/Compare-Environments` - Compare environments and detect drift
-2. `Operations/Validate-Schema-Model` - Validate schema model
-3. `Operations/Generate-Deployment-Script` - Generate deployment scripts
-4. `Operations/Execute-Deployment` - Execute deployments
-5. `Operations/Deployment-Validation` - Add safety checks to CI/CD pipelines
-
-### Path 3: POC Scenario Testing
-Testing Flyway during a proof of concept:
-- Start with `Development/First-Capture` to understand basics
-- Then explore `Scenarios/` to test your specific database patterns
-- Use any scenario quest to validate Flyway handles your use cases
 
 ---
 
@@ -259,5 +234,4 @@ Have suggestions? Found an issue?
 *Choose the quest that matches what you want to learn today!*
 
 ---
->>>>>>> Stashed changes
 
