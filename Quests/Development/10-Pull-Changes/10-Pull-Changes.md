@@ -127,140 +127,210 @@ Get-ChildItem schema-model\Tables | Sort-Object LastWriteTime -Descending | Sele
 - **Expected:** "No differences detected"
 - Your dev database now matches the updated schema model
 
-## ✅ Success Criteria
+### Step 9: The Daily Team Workflow
 
-- ✅ Pulled latest changes from repository
-- ✅ Identified new/modified objects in schema model
-- ✅ Compared database against updated schema model
-- ✅ Synchronized development database using Flyway Desktop
-- ✅ Verified database now matches schema model
-- ✅ Understand workflow for integrating teammates' changes
+**Understand this pattern:**
 
-## 🐛 Troubleshooting
+```
+Teammate's Actions:
+1. Create/modify objects in their dev database
+2. Use Flyway Desktop: Diff → Apply to Schema Model (capture changes)
+3. Commit schema model changes to Git
+4. Push to shared repository
 
-### "Git pull shows merge conflict in schema model file"
-**Problem:** You and teammate modified same object.  
-**Solution:**
-```powershell
-# Open conflicted file
-code schema-model\Tables\Sales.Customers.sql
-
-# Resolve conflict markers
-# Choose correct version or merge manually
-# Save file
-
-# Mark as resolved
-git add schema-model\Tables\Sales.Customers.sql
-git commit
+Your Actions (This Quest):
+5. Pull from shared repository (schema model files updated)
+6. Use Flyway Desktop: Diff → Apply to Development (sync your database)
+7. Continue your development work with latest changes
 ```
 
-### "Synchronization would drop existing data"
-**Problem:** Schema model change requires data migration.  
-**Solution:**
-- Back up data before synchronizing
-- Manually migrate data if needed
-- Coordinate with teammate about the change
-
-### "New object has dependencies not in my database"
-**Problem:** New table references objects you don't have.  
-**Solution:**
-- Pull all changes (may be multiple objects)
-- Synchronize in correct order (Flyway handles this)
-- If still failing, teammate may have incomplete changes
-
-## 💡 Best Practices
-
-### Pull Frequently ✅
-```powershell
-# Daily routine:
-git pull origin develop
-
-# Then check in Flyway Desktop:
-# - Run comparison
-# - Synchronize if needed
-```
-
-### Communicate Big Changes ✅
-```
-Teammate adding major schema changes?
-- Give team heads-up in chat/standup
-- Document dependencies
-- Test synchronization works
-```
-
-### Always Compare After Pulling ✅
-```
-Workflow:
-1. git pull origin develop
-2. Open Flyway Desktop
-3. Run comparison
-4. Synchronize dev database
-5. Verify "No differences"
-6. Now safe to continue your work
-```
-
-### Backup Before Major Syncs ✅
-```sql
--- Before synchronizing large changes:
-BACKUP DATABASE AutopilotDev
-TO DISK = 'C:\Backups\AutopilotDev_BeforeSync.bak';
-```
-
-## 🎓 Key Concepts Learned
-
-- **Pull Workflow:** Getting teammates' schema changes
-- **Schema Model as Source of Truth:** Database follows schema model
-- **Synchronization:** Deploying schema model to database
-- **Collaboration:** Integrating changes from multiple developers
-- **Daily Routine:** Pull → Compare → Sync → Develop
-
-## 🚀 Real-World Applications
-
-- **Team Development:** Everyone stays synchronized
-- **Morning Routine:** Pull latest before starting work
-- **After Meetings:** Sync up after team standups
-- **Before Commits:** Ensure you have latest before pushing
-- **Onboarding:** New developer syncs to team's current state
-
-## 📚 Advanced Scenarios (Optional)
-
-### Handling Multiple New Objects
-```
-Teammate added:
-- Sales.CustomerFeedback (Table)
-- Sales.GetFeedbackSummary (View)
-- Sales.RecordFeedback (Procedure)
-
-Synchronize all at once:
-- Flyway Desktop shows all three
-- Select all and synchronize
-- Flyway deploys in correct dependency order
-```
-
-### Resolving Schema Model Conflicts
-```powershell
-# Both you and teammate modified Sales.Customers
-
-# After git pull:
-CONFLICT: schema-model/Tables/Sales.Customers.sql
-
-# Open file, see:
-<<<<<<< HEAD
-ALTER COLUMN Phone NVARCHAR(20)
-=======
-ALTER COLUMN Phone NVARCHAR(50)
->>>>>>> develop
-
-# Decide correct version (discuss with teammate)
-# Remove conflict markers
-# git add, git commit
-# Then synchronize database
-```
-
-## 📚 Next Steps
-
-**Quest 11: Placeholders** - Learn to handle environment-specific values
+**This is the continuous loop of team development!**
 
 ---
 
-**Congratulations!** 🎉 You know how to pull and synchronize teammates' schema changes!
+## ✅ Success Criteria
+
+- ✅ Simulated a teammate's schema model change (new table file created)
+- ✅ Identified the new object in the schema model
+- ✅ Used Flyway Desktop to compare schema model vs development database
+- ✅ Used "Apply to Development" to sync your database
+- ✅ Verified the new table exists in your development database
+- ✅ Understand the pull-and-apply workflow for team collaboration
+
+## 🎓 Key Concepts Learned
+
+### Schema Model = Team's Source of Truth
+- The schema model represents the desired state of the database
+- All team members sync their databases TO the schema model
+- Schema model is stored in version control (Git)
+
+### Two-Way Sync with Flyway Desktop
+
+**Capture Your Changes (Quest 04):**
+```
+Your Dev DB → Diff → Apply to Schema Model → Commit → Push
+```
+
+**Apply Others' Changes (This Quest):**
+```
+Pull → Schema Model → Diff → Apply to Development → Your Dev DB
+```
+Can't find Apply to Development button"
+**Problem:** Different Flyway Desktop version or view.  
+**Solution:**
+- Look for "Apply to Source" or "Synchronize" button
+- Make sure you're in the Diff tab
+- Source should be `schemaModel`, Target should be `development`
+
+## 💡 Best Practices
+
+### Start Each Day with Git Pull + Apply ✅
+```powershell
+# Morning routine:
+git pull
+
+# Then in Flyway Desktop:
+# 1. Diff: schemaModel vs development
+# 2. Apply to Development (if changes exist)
+# 3. Now your database is in sync with the team
+```
+
+### Communicate Major Changes ✅
+```
+Teammate adding major schema changes?
+- Notify team in chat/standup
+- Document any setup steps needed
+- Test that Apply to Development works smoothly
+```
+
+### Always Check Before Pushing Your Changes ✅
+```
+Before you commit your changes:
+1. git pull (get latest from team)
+2. Apply to Development (sync your database)
+3. Test your changes still work
+4. Then commit and push your changes
+```
+
+### Use Flyway Desktop for Both Directions ✅
+```
+Capture Your Work (Development → Schema Model):
+- Diff tab: development vs schemaModel
+- Apply to Schema Model button
+
+Apply Others' Work (Schema Model → Development):
+- Diff tab: schemaModel vs development  
+- Apply to Development button
+```
+
+---
+
+## 🚀 Real-World Team Development Flow
+
+### Daily Developer Routine
+```
+8:00 AM  - Arrive, get coffee ☕
+8:15 AM  - git pull (get team's latest changes)
+8:16 AM  - Flyway Desktop: Apply to Development (sync database)
+8:20 AM  - Start coding on your feature
+12:00 PM - Lunch break 🍕
+1:00 PM  - git pull (check for updates during lunch)
+1:01 PM  - Flyway Desktop: Apply to Development (if needed)
+5:00 PM  - Finish feature, test locally
+5:10 PM  - Flyway Desktop: Apply to Schema Model (capture your changes)
+5:15 PM  - git add, commit, push (share with team)
+```
+
+### Team Collaboration Patterns
+
+**Scenario 1: New Table Added**
+```
+Developer A: Creates Sales.Promotions table
+           → Applies to Schema Model
+           → Commits and pushes
+
+Developer B: Pulls changes
+           → Sees new table in schema model
+           → Applies to Development
+           → Can now write queries against Sales.Promotions
+```
+
+**Scenario 2: Multiple Developers**
+```
+Developer A: Working on Sales schema
+Developer B: Working on Logistics schema
+Developer C: Working on stored procedures
+
+All three:
+- Start day: Pull → Apply to Development
+- Work independently (different schemas/objects)
+- End day: Apply to Schema Model → Commit → Push
+- Minimal conflicts!
+```
+
+## 📚 Advanced Scenarios (Optional)
+
+### Handling Multiple Related Objects
+
+If your teammate added several interdependent objects:
+```
+Schema Model now contains:
+- Sales.CustomerFeedback (Table)
+- Sales.vw_FeedbackSummary (View - depends on CustomerFeedback)
+- Sales.usp_RecordFeedback (Procedure - inserts into CustomerFeedback)
+
+When you Apply to Development:
+✓ Flyway automatically handles dependency order
+✓ Table created first
+✓ Then view
+✓ Then procedure
+```
+
+### Resolving Merge Conflicts
+
+If you and a teammate modified the same table:
+```powershell
+git pull
+# CONFLICT in schema-model/Tables/Sales.Customers.sql
+
+# Open the file
+code schema-model\Tables\Sales.Customers.sql
+
+# You'll see:
+<<<<<<< HEAD
+    [Phone] NVARCHAR(20)
+=======
+    [Phone] NVARCHAR(50)
+>>>>>>> origin/develop
+
+# Resolve (communicate with teammate!):
+# - Keep one version, or
+# - Manually merge both changes
+
+# After resolving:
+git add schema-model\Tables\Sales.Customers.sql
+git commit
+
+# Then Apply to Development to update your database
+```
+
+---
+
+## 🎉 Congratulations!
+
+You now understand the complete team collaboration workflow:
+
+**Pushing Your Changes (Quest 05):**
+- Development DB → Schema Model → Git → Team
+
+**Pulling Others' Changes (This Quest):**
+- Team → Git → Schema Model → Development DB
+
+**Together, this creates a continuous cycle of team collaboration!**
+
+---
+
+## 📚 Next Steps
+
+Continue to other Development quests to learn more Flyway Desktop features, or try the Operations quests to learn about deployment workflows!
+
