@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Flyway Quests - Your Learning Journey
 
 ## 🎯 About Flyway Quests
@@ -393,3 +394,436 @@ Found an issue? Have a scenario to add?
 **Happy Learning!** 🚀
 
 *Choose a quest, run the setup script, and start building your Flyway expertise.*
+=======
+# Flyway AutoPilot FastTrack - Quest Guide
+
+Welcome to the Flyway Quests! Choose quests based on what you want to learn - each quest is self-contained and focuses on a specific topic.
+
+## 🎯 Quest Categories
+
+### 👨‍💻 Developer Quests
+**Focus:** Using Flyway to create and manage database objects and schema changes, and support day to day operations.
+
+### 🔧 Operations Quests  
+**Focus:** Using Flyway as your Database Release tool. Test, Report, Deploy and more regardless if using the GUI, CLI or Pipelines.
+
+### 📦 Scenarios
+**Focus:** Curious How Flyway can handle certain objects, types or scenarios? Delve through our out of the box Scenarios to be confident in Flyways capabilities.
+---
+
+## 🚀 Getting Started
+
+**Pick by topic, not by order!** Each quest is self-contained:
+
+### Prerequisites
+
+- **Flyway Desktop** installed and configured
+- **Sandbox Environment** set up (see [Flyway Autopilot](https://documentation.red-gate.com/fd/3-provisioning-your-databases-287016879.html) if quick Sandbox Environment needed)
+- **CI/CD Platform** access (for Operations quests only)
+- **Preferred Database Developmnent IDE**
+
+### Quest Structure
+
+Each quest includes:
+- 📋 **Learning Objectives** - What you'll master
+- 🎯 **Scenario** - Real-world context
+- 📝 **Detailed Steps** - Clear instructions
+- 💡 **Code Examples** - Copy-paste ready
+- ✅ **Success Criteria** - How to validate
+- 🐛 **Troubleshooting** - Common issues
+- 🚀 **Advanced Challenges and Learning** - Optional extensions
+
+---
+
+## 💡 Tips for Success
+
+### Do's ✅
+- Pick quests that match your current needs
+- Complete the setup script before starting
+- Test thoroughly as you go
+- Read the troubleshooting section if stuck
+- Try the advanced challenges for deeper learning
+
+### Don'ts ❌
+- You don't need to do quests in order
+- Don't skip the prerequisites
+- Don't rush - take time to understand concepts
+- Don't ignore the hints sections
+
+---
+
+## 📊 Quest Difficulty Legend
+
+🟢 **Beginner** - New to Flyway  
+🟡 **Intermediate** - Comfortable with basics  
+🔴 **Advanced** - Experienced with Flyway
+
+---
+
+## 🆘 Getting Help
+
+If you get stuck:
+
+1. Check the **Hints** section in the quest
+2. Review the **Troubleshooting** guide
+3. Consult [Flyway Documentation](https://documentation.red-gate.com/flyway)
+4. Reach out to your Sales Rep, or to Sales@Red-Gate.com for Support
+
+---
+
+## 📞 Feedback
+
+Have suggestions? Found an issue?
+- Open an issue in the repository
+- Submit a pull request
+- Contact the Owners : Redgate-Autopilot@red-gate.com
+
+---
+
+**Happy Learning!** 🚀
+
+*Choose the quest that matches what you want to learn today!*
+
+---
+
+# 👨‍💻 Developer Quests
+
+State-based development workflow using Flyway Desktop and schema model approach.
+
+## 01 - Clone Project
+**Difficulty:** 🟢 Beginner  
+**Time:** 15-20 minutes  
+**Path:** `Quests/Developer/01-Clone-Project/`
+
+Learn to clone the Flyway AutoPilot State repository and understand the project structure, including schema-model folder, flyway.toml configuration, and development workflow setup.
+
+**You'll learn:**
+- Git clone and repository navigation
+- Flyway state-based project structure
+- Schema model folder organization
+- Flyway configuration files
+
+---
+
+## 02 - Configure Flyway Desktop
+**Difficulty:** 🟢 Beginner  
+**Time:** 20-25 minutes  
+**Path:** `Quests/Developer/02-Configure-Flyway-Desktop/`
+
+Set up secure database connections in Flyway Desktop using user vs. project settings, configure development environment, and understand connection security best practices.
+
+**You'll learn:**
+- User vs. project settings
+- Secure credential storage
+- Environment configuration
+- Connection testing
+
+---
+
+## 03 - Validate Environment Sync
+**Difficulty:** 🟡 Intermediate  
+**Time:** 25-30 minutes  
+**Path:** `Quests/Developer/03-Validate-Environment-Sync/`
+
+Critical skill: Detect and resolve drift between development database and schema model before starting work. Learn to use Flyway Desktop's Diff tab to identify synchronization issues.
+
+**You'll learn:**
+- Drift detection
+- Environment synchronization
+- Diff tab usage
+- Conflict resolution
+
+---
+
+## 04 - Capture New Changes
+**Difficulty:** 🟢 Beginner  
+**Time:** 30-35 minutes  
+**Path:** `Quests/Developer/04-Capture-New-Changes/`
+
+Master the core state-based workflow: create new database objects in SSMS, capture them to schema model using Flyway Desktop, and prepare for version control.
+
+**You'll learn:**
+- State-based workflow
+- Object creation and capture
+- Schema model updates
+- Flyway Desktop Diff + Apply
+
+---
+
+## 05 - Commit and Push
+**Difficulty:** 🟢 Beginner  
+**Time:** 20-25 minutes  
+**Path:** `Quests/Developer/05-Commit-and-Push/`
+
+Learn Git workflow integrated with Flyway state-based development: staging schema model changes, writing meaningful commit messages, and pushing to remote repository.
+
+**You'll learn:**
+- Git add/commit/push workflow
+- Commit message best practices
+- Schema model version control
+- Collaboration fundamentals
+
+---
+
+## 06 - Modify Existing Object
+**Difficulty:** 🟡 Intermediate  
+**Time:** 25-30 minutes  
+**Path:** `Quests/Developer/06-Modify-Existing-Object/`
+
+Understand state-based modifications: alter existing objects (tables, views, procedures), recapture to schema model, and handle modification conflicts.
+
+**You'll learn:**
+- Modifying existing objects
+- State recapture workflow
+- Handling schema changes
+- Diff detection for modifications
+
+---
+
+## 07 - Track Static Data
+**Difficulty:** 🟡 Intermediate  
+**Time:** 30-35 minutes  
+**Path:** `Quests/Developer/07-Track-Static-Data/`
+
+Version control reference/configuration data: capture static data to schema model, manage data changes alongside schema changes, and deploy data with schema.
+
+**You'll learn:**
+- Static data identification
+- Data capture to schema model
+- Data versioning
+- Static data deployment
+
+---
+
+## 08 - Feature Branch Workflow
+**Difficulty:** 🟡 Intermediate  
+**Time:** 35-40 minutes  
+**Path:** `Quests/Developer/08-Feature-Branch-Workflow/`
+
+Implement isolated development: create feature branches, develop schema changes independently, merge branches, and resolve schema conflicts.
+
+**You'll learn:**
+- Git feature branches
+- Isolated schema development
+- Branch merging strategies
+- Schema conflict resolution
+
+---
+
+## 09 - Filtering
+**Difficulty:** 🟡 Intermediate  
+**Time:** 25-30 minutes  
+**Path:** `Quests/Developer/09-Filtering/`
+
+Focus comparisons with filters: exclude schemas/objects from diff operations, create clean comparisons, and manage complex database structures efficiently.
+
+**You'll learn:**
+- Schema filtering
+- Object filtering
+- Filter configuration
+- Focused comparisons
+
+---
+
+## 10 - Pull Changes
+**Difficulty:** 🟢 Beginner  
+**Time:** 20-25 minutes  
+**Path:** `Quests/Developer/10-Pull-Changes/`
+
+Synchronize with team changes: pull schema model updates from Git, apply teammate changes to local database, and maintain environment synchronization.
+
+**You'll learn:**
+- Git pull workflow
+- Team synchronization
+- Schema model deployment
+- Conflict handling
+
+---
+
+## 11 - Placeholders
+**Difficulty:** 🟡 Intermediate  
+**Time:** 30-35 minutes  
+**Path:** `Quests/Developer/11-Placeholders/`
+
+Manage environment-specific values: use placeholders for configuration, handle environment differences (dev/test/prod), and deploy parameterized schema.
+
+**You'll learn:**
+- Placeholder syntax
+- Environment-specific configuration
+- Flyway placeholder replacement
+- Configuration management
+
+---
+
+# 🔧 Operations Quests
+
+State-based CLI deployment workflow for automation, CI/CD, and production deployments.
+
+## 00 - Compare Environments
+**Difficulty:** 🟡 Intermediate  
+**Time:** 20-25 minutes  
+**Path:** `Quests/Operations/00-Compare-Environments/`  
+**Helper Script:** `00_Flyway_State_Diff.ps1`
+
+Learn to use `flyway diff` command to compare two environments (databases, schema models, snapshots) and create difference artifacts for analysis and downstream operations.
+
+**You'll learn:**
+- `flyway diff` command
+- Artifact creation
+- Environment comparison
+- Source vs. target parameters
+- Drift detection
+
+---
+
+## 01 - Capture Schema Model
+**Difficulty:** 🟡 Intermediate  
+**Time:** 15-20 minutes  
+**Path:** `Quests/Operations/01-Capture-Schema-Model/`  
+**Helper Script:** `01_Flyway_State_Model.ps1`
+
+Use `flyway model` to read difference artifacts and automatically update schema model files, keeping your version-controlled schema in sync with development database.
+
+**You'll learn:**
+- `flyway model` command
+- Artifact consumption
+- Automatic schema model updates
+- File creation/modification/deletion
+- CLI-based workflow
+
+---
+
+## 02 - Generate Deployment Scripts
+**Difficulty:** 🟡 Intermediate  
+**Time:** 20-25 minutes  
+**Path:** `Quests/Operations/02-Generate-Deployment-Scripts/`  
+**Helper Script:** `02_Flyway_State_Prepare.ps1`
+
+Generate deployment and undo scripts using `flyway prepare`, comparing schema model to target environments and creating executable SQL scripts for review and deployment.
+
+**You'll learn:**
+- `flyway prepare` command
+- Deploy script generation
+- Undo script generation
+- Script review practices
+- Idempotent SQL
+
+---
+
+## 03 - Validate Deployment
+**Difficulty:** 🟡 Intermediate  
+**Time:** 25-30 minutes  
+**Path:** `Quests/Operations/03-Validate-Deployment/`  
+**Helper Scripts:** `03a_Flyway_State_Snapshot.ps1`, `03b_Flyway_State_Check.ps1`
+
+Create database snapshots and run comprehensive checks before deployment: analyze changes, detect drift, perform code quality checks, and generate HTML validation reports.
+
+**You'll learn:**
+- `flyway snapshot` command
+- Snapshot history management
+- `flyway check` command (changes, drift, code)
+- HTML report interpretation
+- Risk assessment
+
+---
+
+## 04 - Execute Deployment
+**Difficulty:** 🟠 Advanced  
+**Time:** 20-30 minutes  
+**Path:** `Quests/Operations/04-Execute-Deployment/`  
+**Helper Script:** `04_Flyway_State_Deploy.ps1`
+
+Execute deployment scripts using `flyway deploy`, apply schema changes to target databases, verify successful deployments, and capture post-deployment snapshots.
+
+**You'll learn:**
+- `flyway deploy` command
+- Deployment execution
+- Transaction safety
+- Post-deployment verification
+- Rollback procedures
+- Deployment documentation
+
+---
+
+## Deployment-Validation
+**Difficulty:** 🟡 Intermediate  
+**Time:** 30 minutes  
+**Path:** `Quests/Operations/Deployment-Validation/`
+
+Additional deployment validation techniques and best practices for ensuring safe and successful deployments across environments.
+
+---
+
+# 📦 Scenarios
+
+Real-world scenarios demonstrating how Flyway handles various database objects and complex situations. Each scenario shows you how to create the situation, then how to capture, deploy, and manage it with Flyway.
+
+## New Schema
+**Difficulty:** 🟢 Beginner  
+**Time:** 25-30 minutes  
+**Path:** `Quests/Other/New-Schema/`
+
+Learn how to create and manage new database schemas with Flyway. Create an HR schema with tables, views, and stored procedures, then capture and deploy it across environments.
+
+**Demonstrates:**
+- Schema creation and authorization
+- Schema-level organization
+- Schema-level security
+- Multi-object deployment in new schema
+- Schema deployment ordering
+
+---
+
+## Foreign Key Constraints
+**Difficulty:** 🟡 Intermediate  
+**Time:** 30-35 minutes  
+**Path:** `Quests/Other/ForeignKey/`
+
+Master foreign key constraint management with Flyway. Create complex FK relationships, understand dependency ordering, and see how Flyway intelligently handles referential integrity during deployment.
+
+**Demonstrates:**
+- FK constraint creation and naming
+- Automatic dependency resolution
+- Parent-before-child deployment ordering
+- Circular dependency handling
+- Cascading actions (DELETE, UPDATE)
+- FK modifications and removal
+
+---
+
+## Database Indexes
+**Difficulty:** 🟡 Intermediate  
+**Time:** 30-35 minutes  
+**Path:** `Quests/Other/Index/`
+
+Explore how Flyway manages various index types: clustered, non-clustered, unique, filtered, and composite indexes. Learn performance optimization and index deployment best practices.
+
+**Demonstrates:**
+- Non-clustered indexes with included columns
+- Unique indexes (including filtered unique)
+- Filtered indexes (WHERE clause)
+- Composite indexes (multi-column)
+- Covering indexes for query performance
+- Index deployment and modification
+- Monitoring index usage
+
+---
+
+## Cross-Schema Dependencies
+**Difficulty:** 🔴 Advanced  
+**Time:** 35-45 minutes  
+**Path:** `Quests/Other/Cross-Dependancy/`
+
+Advanced scenario showing how Flyway handles complex dependencies across schema boundaries. Create views, functions, and procedures that reference multiple schemas, and watch Flyway resolve the deployment order automatically.
+
+**Demonstrates:**
+- Cross-schema views and joins
+- Cross-schema functions and procedures
+- Cross-schema foreign keys
+- Multi-level dependency chains
+- Circular dependency resolution
+- Topological sort deployment ordering
+- Complex dependency graph analysis
+
+---
+>>>>>>> Stashed changes
