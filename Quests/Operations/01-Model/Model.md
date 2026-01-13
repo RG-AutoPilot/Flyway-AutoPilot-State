@@ -167,8 +167,8 @@ code schema-model/Tables/Sales.NewTable.sql
 
 ## 📖 Further Reading
 
-- [Flyway Model Documentation](https://documentation.red-gate.com/fd/model-184127477.html)
-- [Schema Model Concept](https://documentation.red-gate.com/fd/schema-model-184127389.html)
+- [Flyway Model Documentation](https://documentation.red-gate.com/flyway/reference/commands/model)
+- [Schema Model Concept](https://documentation.red-gate.com/flyway/flyway-concepts/schema-model)
 
 ---
 

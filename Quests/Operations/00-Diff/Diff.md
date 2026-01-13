@@ -162,8 +162,8 @@ Artifact saved to: Artifacts\diff.zip
 
 ## 📖 Further Reading
 
-- [Flyway Diff Documentation](https://documentation.red-gate.com/fd/diff-184127472.html)
-- [State-Based Workflow Guide](https://documentation.red-gate.com/fd/state-based-projects-227279884.html)
+- [Flyway Diff Documentation](https://documentation.red-gate.com/flyway/reference/commands/diff)
+- [State-Based Workflow Guide](https://documentation.red-gate.com/flyway/flyway-concepts/state-based-projects)
 
 ---
 

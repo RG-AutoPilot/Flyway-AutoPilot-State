@@ -261,9 +261,9 @@ flyway snapshot -environment=Test -snapshot.filename="snapshotHistory:initial"
 
 ## 📖 Further Reading
 
-- [Flyway Check Documentation](https://documentation.red-gate.com/fd/check-184127463.html)
-- [Code Analysis Rules](https://documentation.red-gate.com/fd/code-analysis-184127467.html)
-- [Drift Detection Guide](https://documentation.red-gate.com/fd/drift-184127469.html)
+- [Flyway Check Documentation](https://documentation.red-gate.com/flyway/reference/commands/check)
+- [Code Analysis Rules](https://documentation.red-gate.com/flyway/flyway-concepts/code-analysis)
+- [Drift Detection Guide](https://documentation.red-gate.com/flyway/flyway-concepts/drift)
 
 ---
 

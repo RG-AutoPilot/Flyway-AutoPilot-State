@@ -281,9 +281,9 @@ ORDER BY createdAt DESC;
 
 ## 📖 Further Reading
 
-- [Flyway Deploy Documentation](https://documentation.red-gate.com/fd/deploy-184127465.html)
-- [Deployment Best Practices](https://documentation.red-gate.com/fd/state-based-projects-227279884.html)
-- [Rollback Strategies](https://documentation.red-gate.com/fd/prepare-184127492.html)
+- [Flyway Deploy Documentation](https://documentation.red-gate.com/flyway/reference/commands/deploy)
+- [Deployment Best Practices](https://documentation.red-gate.com/flyway/flyway-concepts/state-based-projects)
+- [Rollback Strategies](https://documentation.red-gate.com/flyway/reference/commands/prepare)
 
 ---
 
