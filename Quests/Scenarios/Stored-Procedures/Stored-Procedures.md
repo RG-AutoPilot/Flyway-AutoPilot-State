@@ -756,13 +756,6 @@ You're now equipped to handle database development from beginner to expert level
 - Mentor others learning Flyway
 
 **Well done, Flyway Expert!** 🚀
-=======
-**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS (if applicable)**
-
-# Developer Quest - Complex Stored Procedures and Functions
-
-**Difficulty:** Advanced  
-**Time:** 45-60 minutes  
 **Prerequisites:** Flyway Desktop, SQL programming experience
 
 ## Learning Objectives
