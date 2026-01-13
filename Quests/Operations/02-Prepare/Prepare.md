@@ -228,8 +228,8 @@ flyway prepare `
 
 ## 📖 Further Reading
 
-- [Flyway Prepare Documentation](https://documentation.red-gate.com/fd/prepare-184127492.html)
-- [Deployment Scripts Best Practices](https://documentation.red-gate.com/fd/state-based-projects-227279884.html)
+- [Flyway Prepare Documentation](https://documentation.red-gate.com/flyway/reference/commands/prepare)
+- [Deployment Scripts Best Practices](https://documentation.red-gate.com/flyway/flyway-concepts/state-based-projects)
 
 ---
 

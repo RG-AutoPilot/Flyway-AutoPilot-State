@@ -268,8 +268,8 @@ Deleted old snapshots: 2 (over limit of 5)
 
 ## 📖 Further Reading
 
-- [Flyway Snapshot Documentation](https://documentation.red-gate.com/fd/snapshot-184127501.html)
-- [Drift Detection Guide](https://documentation.red-gate.com/fd/drift-184127469.html)
+- [Flyway Snapshot Documentation](https://documentation.red-gate.com/flyway/reference/commands/snapshot)
+- [Drift Detection Guide](https://documentation.red-gate.com/flyway/flyway-concepts/drift)
 
 ---
 

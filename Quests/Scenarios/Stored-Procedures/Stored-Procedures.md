@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream:Quests/Scenarios/Stored-Procedures/Stored-Procedures.md
 **⚠️ RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
 
 # Scenario Quest - Stored Procedures and Functions
@@ -757,13 +756,6 @@ You're now equipped to handle database development from beginner to expert level
 - Mentor others learning Flyway
 
 **Well done, Flyway Expert!** 🚀
-=======
-**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS (if applicable)**
-
-# Developer Quest - Complex Stored Procedures and Functions
-
-**Difficulty:** Advanced  
-**Time:** 45-60 minutes  
 **Prerequisites:** Flyway Desktop, SQL programming experience
 
 ## Learning Objectives
@@ -1289,4 +1281,3 @@ You're now equipped to handle database development from beginner to expert level
 - Mentor others learning Flyway
 
 **Well done, Flyway Expert!** 🚀
->>>>>>> Stashed changes:Quests/Developer/Stored-Procedures/Stored-Procedures.md
