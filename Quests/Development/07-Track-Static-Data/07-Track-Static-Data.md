@@ -55,6 +55,9 @@ INSERT INTO Sales.LoyaltyProgram VALUES
 2. **Navigate to Static Data settings:**
    - Look for **"Static Data"** or **"Data Compare"** feature
    - Or in project settings/configuration
+  
+    <img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/d05e745e-89cb-4067-82c7-9bef11c60225" />
+
 
 3. **Mark table for static data tracking:**
    - Find `Sales.LoyaltyProgram` in table list
