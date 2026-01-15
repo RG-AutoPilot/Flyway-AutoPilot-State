@@ -1,5 +1,4 @@
-<<<<<<<< Updated upstream:Quests/Scenarios/Callbacks/Callbacks.md
-**⚠️ WE HAVE PROVIDED EXAMPLE SQL FOR THE CALLBACK SCRIPT**
+**⚠️ WE HAVE PROVIDED AN EXAMPLE CALLBACK SCRIPT BELOW**
 
 # Scenario Quest - Flyway Callbacks
 
@@ -918,4 +917,5 @@ PRINT 'beforeEachMigrate: Migration logged';
 
 ## Next Steps
 Fantastic work on callbacks! Explore other quests to learn about creating complex stored procedures and functions!
+
 >>>>>>>> Stashed changes:Quests/Operations/Callbacks/Callbacks.md
