@@ -2,10 +2,10 @@
 
 # ===========================
 # Pipeline Name: GitHub-Flyway-CICD-StateBased-Pipeline_Windows.yml
-# Version: 1.0.4
+# Version: 1.1.0
 # Author: Redgate Software Ltd
-# Last Updated: 2026-01-05
-# Last Update Notes: Updated check reports to use new Snapshot's feature
+# Last Updated: 2026-01-30
+# Last Update Notes: Updated to use red-gate/setup-flyway action for Flyway CLI installation
 # Description: Azure DevOps YAML Pipeline for State Based Flyway workflows using Windows Runners
 # ===========================
  
@@ -48,8 +48,7 @@ env:
 
   # Optional: Validate Flyway CLI installation for ephemeral agents.
   FLYWAY_CLI_INSTALL_CHECK: "${{ secrets.FLYWAY_CLI_INSTALL }}" # Setting to false will skip the Flyway CLI check step
-  FLYWAY_VERSION: "Latest" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'Latest' for latest version)
-  FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # The path on the agent machine where Flyway CLI will be installed  
+  FLYWAY_VERSION: "latest" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'latest' for latest version)
 
   # Optional: Side Quest #1 - Enable Flyway Pipeline Integration for tracking releases and drift. - https://flyway.red-gate.com/
   FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
@@ -79,21 +78,12 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
-      - name: Flyway - CLI Install Manual Validation
+      # Optional - If Enabled, Flyway CLI will be installed if not present
+      - name: Flyway - CLI Install
+        uses: red-gate/setup-flyway@v1
+        with:
+          version: ${{ env.FLYWAY_VERSION }}
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-        run: |
-          $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
-          if (Test-Path $scriptPath) {
-            echo "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
-            & $scriptPath
-            echo "Updating PATH environment variable to include Flyway CLI Path"
-              echo "${{ env.FLYWAY_INSTALL_DIRECTORY }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          } 
-          else {
-            echo "Error: Script not found at path $scriptPath"
-            exit 1
-          }
       # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
         if: ${{ env.EXECUTE_BUILD == 'true' && env.FLYWAY_AUTH_DISABLED != 'true' && success() }}
@@ -165,21 +155,12 @@ jobs:
       # Optional - List out all build artifact files on disk, helpful for debugging
       - name: Display structure of downloaded files
         run: ls -R
-      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
-      - name: Flyway - CLI Install Manual Validation
+      # Optional - If Enabled, Flyway CLI will be installed if not present
+      - name: Flyway - CLI Install
+        uses: red-gate/setup-flyway@v1
+        with:
+          version: ${{ env.FLYWAY_VERSION }}
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-        run: |
-          $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
-          if (Test-Path $scriptPath) {
-            echo "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
-            & $scriptPath
-            echo "Updating PATH environment variable to include Flyway CLI Path"
-              echo "${{ env.FLYWAY_INSTALL_DIRECTORY }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          } 
-          else {
-            echo "Error: Script not found at path $scriptPath"
-            exit 1
-          }
       # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
         if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
@@ -281,21 +262,12 @@ jobs:
       # Optional - List out all build artifact files on disk, helpful for debugging
       - name: Display structure of downloaded files
         run: ls -R
-      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
-      - name: Flyway - CLI Install Manual Validation
+      # Optional - If Enabled, Flyway CLI will be installed if not present
+      - name: Flyway - CLI Install
+        uses: red-gate/setup-flyway@v1
+        with:
+          version: ${{ env.FLYWAY_VERSION }}
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-        run: |
-          $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
-          if (Test-Path $scriptPath) {
-            echo "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
-            & $scriptPath
-            echo "Updating PATH environment variable to include Flyway CLI Path"
-              echo "${{ env.FLYWAY_INSTALL_DIRECTORY }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          } 
-          else {
-            echo "Error: Script not found at path $scriptPath"
-            exit 1
-          }
        # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
         if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
