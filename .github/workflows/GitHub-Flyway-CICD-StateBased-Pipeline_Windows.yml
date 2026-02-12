@@ -69,8 +69,9 @@ jobs:
 
       # Install Flyway CLI
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v2
+        uses: red-gate/setup-flyway@v3
         with:
+          edition: enterprise
           version: ${{ env.FLYWAY_VERSION }}
           email: ${{ secrets.FLYWAY_EMAIL }}
           token: ${{ secrets.FLYWAY_TOKEN }}
@@ -144,8 +145,9 @@ jobs:
 
       # Install Flyway CLI
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v2
+        uses: red-gate/setup-flyway@v3
         with:
+          edition: enterprise
           version: ${{ env.FLYWAY_VERSION }}
           email: ${{ secrets.FLYWAY_EMAIL }}
           token: ${{ secrets.FLYWAY_TOKEN }}
@@ -194,12 +196,12 @@ jobs:
             -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" `
             -workingDirectory="${{ GITHUB.WORKSPACE }}" `
             -reportFilename="${{ GITHUB.WORKSPACE }}\Artifact\${{ env.REPORT_FILENAME }}" `
-            ${{ env.CUSTOM_PARAMS }}      
+            ${{ env.CUSTOM_PARAMS }}
       # Step 4 - Publish Check Report
       - name: Publish Check Report as Artifact
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         uses: actions/upload-artifact@v4
-        with: 
+        with:
           name: flyway-reports-test
           path: |
             ${{ GITHUB.WORKSPACE }}\Artifact\${{ env.SCRIPT_FILENAME }}
@@ -250,8 +252,9 @@ jobs:
       
       # Install Flyway CLI
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v2
+        uses: red-gate/setup-flyway@v3
         with:
+          edition: enterprise
           version: ${{ env.FLYWAY_VERSION }}
           email: ${{ secrets.FLYWAY_EMAIL }}
           token: ${{ secrets.FLYWAY_TOKEN }}
@@ -300,12 +303,12 @@ jobs:
             -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" `
             -workingDirectory="${{ GITHUB.WORKSPACE }}" `
             -reportFilename="${{ GITHUB.WORKSPACE }}\Artifact\${{ env.REPORT_FILENAME }}" `
-            ${{ env.CUSTOM_PARAMS }}      
+            ${{ env.CUSTOM_PARAMS }}
       # Step 4 - Publish Check Report
       - name: Publish Check Report as Artifact
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         uses: actions/upload-artifact@v4
-        with: 
+        with:
           name: flyway-reports-prod
           path: |
             ${{ GITHUB.WORKSPACE }}\Artifact\${{ env.SCRIPT_FILENAME }}

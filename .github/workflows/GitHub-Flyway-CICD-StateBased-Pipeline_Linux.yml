@@ -70,13 +70,14 @@ jobs:
       
       # Install Flyway CLI
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v2
+        uses: red-gate/setup-flyway@v3
         with:
+          edition: enterprise
           version: ${{ env.FLYWAY_VERSION }}
           email: ${{ secrets.FLYWAY_EMAIL }}
           token: ${{ secrets.FLYWAY_TOKEN }}
           i-agree-to-the-eula: true
-         
+
       # Prepare & Deploy: Detect differences > Create deployment script > Deploy script to target (If any found)
       # Tip - Notice the CLI Verb chaining. This command uses 'clean', 'prepare' and 'deploy' together to streamline the deployment task.
       - name: Flyway CLI - Prepare and Deploy
@@ -145,8 +146,9 @@ jobs:
 
         # Install Flyway CLI
         - name: Flyway - CLI Install
-          uses: red-gate/setup-flyway@v2
+          uses: red-gate/setup-flyway@v3
           with:
+            edition: enterprise
             version: ${{ env.FLYWAY_VERSION }}
             email: ${{ secrets.FLYWAY_EMAIL }}
             token: ${{ secrets.FLYWAY_TOKEN }}
@@ -268,8 +270,9 @@ jobs:
 
       # Install Flyway CLI
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v2
+        uses: red-gate/setup-flyway@v3
         with:
+          edition: enterprise
           version: ${{ env.FLYWAY_VERSION }}
           email: ${{ secrets.FLYWAY_EMAIL }}
           token: ${{ secrets.FLYWAY_TOKEN }}
