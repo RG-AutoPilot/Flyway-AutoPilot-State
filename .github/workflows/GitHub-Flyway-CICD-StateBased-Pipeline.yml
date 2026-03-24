@@ -49,15 +49,17 @@ jobs:
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       SCRIPT_FILENAME: "Flyway-AutoPilotBuild-AutoDeploymentScript"
+      REPORT_FILENAME: "Flyway-AutopilotTest-Report"
       EXECUTE_BUILD: 'true' # Turn to false to skip the build stage tasks
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
+     # Step 1 - Validate and Install Flyway CLI if not already present on the agent      
       - name: Install Redgate Flyway
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-        uses: red-gate/setup-flyway@001f3e6d8d7b60f50542956f7f933674c73d2335
+        uses: red-gate/setup-flyway@v3
         with:
           edition: enterprise
           version: ${{ env.FLYWAY_VERSION }}
@@ -80,8 +82,8 @@ jobs:
             generate-undo: true
             fail-on-drift: false
             fail-on-code-review: false
-            pre-deployment-report-name: "flyway-prepare-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
-            drift-resolution-scripts-name: "flyway-drift-resolve-${{ env.TARGET_DATABASE_ENVIRONMENT }}"
+            pre-deployment-report-name: "${{ env.REPORT_FILENAME }}-PreDeployment"
+            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
             deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
             undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
             working-directory: ${{ GITHUB.WORKSPACE }}
@@ -96,7 +98,7 @@ jobs:
             script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
             skip-drift-check: false
             skip-deployment-report-upload: true
-            deployment-report-name: "flyway-deploy-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
+            deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
@@ -117,109 +119,120 @@ jobs:
               ${{ GITHUB.WORKSPACE }}/**/flyway.toml
               ${{ GITHUB.WORKSPACE }}/**/Filter.scpf
 
-#   test:
-#     name: Deploy Test
-#     runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
-#     environment: 'test' # This refers to GitHub's Environment name
-#     if: ${{ true }} # Set this variable to false to temporarily disable the job
-#     needs: build
-#     env:
-#       TARGET_DATABASE_ENVIRONMENT: "Test" # Refers to the environment in the Flyway Project TOML file.
-#       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
-#       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
-#       REPORT_ENVIRONMENT: "Check"
-#       REPORT_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
-#       REPORT_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
+  test:
+    name: Deploy Test
+    runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+    environment: 'test' # This refers to GitHub's Environment name
+    if: ${{ true }} # Set this variable to false to temporarily disable the job
+    needs: build
+    env:
+      SOURCE_DATABASE_ENVIRONMENT: "schemaModel"
+      TARGET_DATABASE_ENVIRONMENT: "Test" # Refers to the environment in the Flyway Project TOML file.
+      TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
+      TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
+      SCRIPT_FILENAME: "Flyway-AutopilotTest-AutoDeploymentScript"
+      REPORT_FILENAME: "Flyway-AutopilotTest-Report"
     
-#     steps:
-#       - name: Download Build Artifacts
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: flyway-build-artifact
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: flyway-build-artifact
+      # Step 1 - Validate and Install Flyway CLI if not already present on the agent     
+      - name: Install Redgate Flyway
+        if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
+        uses: red-gate/setup-flyway@v3
+        with:
+          edition: enterprise
+          version: ${{ env.FLYWAY_VERSION }}
+          email: ${{ secrets.FLYWAY_EMAIL }}
+          token: ${{ secrets.FLYWAY_TOKEN }}
+          i-agree-to-the-eula: true
 
-#       - name: Install Redgate Flyway
-#         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-#         uses: red-gate/setup-flyway@v3
-#         with:
-#           edition: enterprise
-#           version: ${{ env.FLYWAY_VERSION }}
-#           email: ${{ secrets.FLYWAY_EMAIL }}
-#           token: ${{ secrets.FLYWAY_TOKEN }}
-#           i-agree-to-the-eula: true
+       # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
+      - uses: red-gate/flyway-actions/state/prepare@v2
+        with:
+            target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
+            target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
+            target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
+            generate-undo: true
+            fail-on-drift: false
+            fail-on-code-review: false
+            pre-deployment-report-name: "${{ env.REPORT_FILENAME }}-PreDeployment"
+            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
+            deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
+            undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
+            working-directory: ${{ GITHUB.WORKSPACE }}
+            extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
-#       # Step 1 - Create Check Report
-#       - name: Create Check Reports
-#         uses: red-gate/flyway-actions/migrations/checks@v1
-#         with:
-#           target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
-#           target-user: ${{ env.TARGET_DATABASE_USERNAME }}
-#           target-password: ${{ env.TARGET_DATABASE_PASSWORD }}
-#           build-environment: ${{ env.REPORT_ENVIRONMENT }}
-#           build-user: ${{ env.REPORT_DATABASE_USERNAME }}
-#           build-password: ${{ env.REPORT_DATABASE_PASSWORD }}
-#           build-ok-to-erase: true
-#           pre-deployment-report-name: "flyway-checks-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
-#           extra-args: "${{ secrets.CUSTOM_PARAMS }}"
+      # Step 3 - Deploy: Apply the prepared deployment script to the target database    
+      - uses: red-gate/flyway-actions/state/deploy@v2
+        with:
+            target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
+            target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
+            target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
+            script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
+            skip-drift-check: false
+            skip-deployment-report-upload: true
+            deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
+            working-directory: ${{ GITHUB.WORKSPACE }}
+            extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
-#       # Step 2 - Deploy pending migrations to target database
-#       - name: Deploy to Test DB
-#         uses: red-gate/flyway-actions/migrations/deploy@v1
-#         with:
-#           target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
-#           target-user: ${{ env.TARGET_DATABASE_USERNAME }}
-#           target-password: ${{ env.TARGET_DATABASE_PASSWORD }}
-#           extra-args: "${{ secrets.CUSTOM_PARAMS }}"
-
-#   prod:
-#     name: Deploy Prod
-#     runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
-#     environment: 'prod'
-#     if: ${{ true }} # Set this variable to false to temporarily disable the job
-#     needs: test
-#     env:
-#       TARGET_DATABASE_ENVIRONMENT: "Prod" # Refers to the environment name in the Flyway Project TOML file.
-#       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}" 
-#       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}" 
-#       REPORT_ENVIRONMENT: "Check"
-#       REPORT_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
-#       REPORT_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
+  prod:
+    name: Deploy Prod
+    runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+    environment: 'prod'
+    if: ${{ true }} # Set this variable to false to temporarily disable the job
+    needs: test
+    env:
+      SOURCE_DATABASE_ENVIRONMENT: "schemaModel"
+      TARGET_DATABASE_ENVIRONMENT: "Prod" # Refers to the environment in the Flyway Project TOML file.
+      TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
+      TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
+      SCRIPT_FILENAME: "Flyway-AutopilotProd-AutoDeploymentScript"
+      REPORT_FILENAME: "Flyway-AutopilotProd-Report"
     
-#     steps:
-#       - name: Download Build Artifacts
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: flyway-build-artifact
-      
-#       - name: Install Redgate Flyway
-#         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-#         uses: red-gate/setup-flyway@v3
-#         with:
-#           edition: enterprise
-#           version: ${{ env.FLYWAY_VERSION }}
-#           email: ${{ secrets.FLYWAY_EMAIL }}
-#           token: ${{ secrets.FLYWAY_TOKEN }}
-#           i-agree-to-the-eula: true
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: flyway-build-artifact
+      # Step 1 - Validate and Install Flyway CLI if not already present on the agent     
+      - name: Install Redgate Flyway
+        if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
+        uses: red-gate/setup-flyway@v3
+        with:
+          edition: enterprise
+          version: ${{ env.FLYWAY_VERSION }}
+          email: ${{ secrets.FLYWAY_EMAIL }}
+          token: ${{ secrets.FLYWAY_TOKEN }}
+          i-agree-to-the-eula: true
 
-#       # Step 1 - Create Check Report
-#       - name: Create Check Reports
-#         uses: red-gate/flyway-actions/migrations/checks@v1
-#         with:
-#           target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
-#           target-user: ${{ env.TARGET_DATABASE_USERNAME }}
-#           target-password: ${{ env.TARGET_DATABASE_PASSWORD }}
-#           build-environment: ${{ env.REPORT_ENVIRONMENT }}
-#           build-user: ${{ env.REPORT_DATABASE_USERNAME }}
-#           build-password: ${{ env.REPORT_DATABASE_PASSWORD }}
-#           build-ok-to-erase: true
-#           pre-deployment-report-name: "flyway-checks-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
-#           extra-args: "${{ secrets.CUSTOM_PARAMS }}"
+       # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
+      - uses: red-gate/flyway-actions/state/prepare@v2
+        with:
+            target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
+            target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
+            target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
+            generate-undo: true
+            fail-on-drift: false
+            fail-on-code-review: false
+            pre-deployment-report-name: "${{ env.REPORT_FILENAME }}-PreDeployment"
+            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
+            deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
+            undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
+            working-directory: ${{ GITHUB.WORKSPACE }}
+            extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
-#       # Step 3 - Deploy pending migrations to target database
-#       - name: Deploy to Production DB
-#         if: success()
-#         uses: red-gate/flyway-actions/migrations/deploy@v1
-#         with:
-#           target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
-#           target-user: ${{ env.TARGET_DATABASE_USERNAME }}
-#           target-password: ${{ env.TARGET_DATABASE_PASSWORD }}
-#           extra-args: "${{ secrets.CUSTOM_PARAMS }}"
+      # Step 3 - Deploy: Apply the prepared deployment script to the target database    
+      - uses: red-gate/flyway-actions/state/deploy@v2
+        with:
+            target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
+            target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
+            target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
+            script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
+            skip-drift-check: false
+            skip-deployment-report-upload: true
+            deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
+            working-directory: ${{ GITHUB.WORKSPACE }}
+            extra-args: "${{ secrets.CUSTOM_PARAMS }}"
