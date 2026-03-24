@@ -34,7 +34,7 @@ on:
       #- 'migrations/**'
 env:
   FLYWAY_CLI_INSTALL_CHECK: true # Setting to false will skip the Flyway CLI check step
-  FLYWAY_VERSION: "11.9.2" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'Latest' for latest version)
+  FLYWAY_VERSION: "11.9.1" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'Latest' for latest version)
   ACTIONS_RUNNER_DEBUG: false # Enable this for additional debug logging
 
 jobs:
@@ -79,8 +79,8 @@ jobs:
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
             generate-undo: true
             fail-on-drift: false
-            pre-deployment-report-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\flyway-prepare-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
-            drift-resolution-scripts-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\flyway-drift-resolve-${{ env.TARGET_DATABASE_ENVIRONMENT }}"
+            pre-deployment-report-name: "flyway-prepare-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
+            drift-resolution-scripts-name: "flyway-drift-resolve-${{ env.TARGET_DATABASE_ENVIRONMENT }}"
             deployment-script-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\D_${{ env.SCRIPT_FILENAME }}"
             undo-script-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\U_${{ env.SCRIPT_FILENAME }}"
             working-directory: ${{ GITHUB.WORKSPACE }}
@@ -95,7 +95,7 @@ jobs:
             script-path: "${{ GITHUB.WORKSPACE }}\\Artifact\\D_${{ env.SCRIPT_FILENAME }}"
             skip-drift-check: false
             skip-deployment-report-upload: true
-            deployment-report-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\flyway-deploy-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
+            deployment-report-name: "flyway-deploy-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
