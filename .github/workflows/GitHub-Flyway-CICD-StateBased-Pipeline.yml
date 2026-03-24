@@ -48,7 +48,7 @@ jobs:
       TARGET_DATABASE_ENVIRONMENT: 'Build' # This variable refers to the environment name present in the Flyway Projects TOML file. 
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
-      SCRIPT_FILENAME: "Flyway-AutoPilotBuild-AutoDeploymentScript.sql"
+      SCRIPT_FILENAME: "Flyway-AutoPilotBuild-AutoDeploymentScript"
       EXECUTE_BUILD: 'true' # Turn to false to skip the build stage tasks
     
     steps:
@@ -81,8 +81,8 @@ jobs:
             fail-on-drift: false
             pre-deployment-report-name: "flyway-prepare-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
             drift-resolution-scripts-name: "flyway-drift-resolve-${{ env.TARGET_DATABASE_ENVIRONMENT }}"
-            deployment-script-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\D_${{ env.SCRIPT_FILENAME }}"
-            undo-script-name: "${{ GITHUB.WORKSPACE }}\\Artifact\\U_${{ env.SCRIPT_FILENAME }}"
+            deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
+            undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
@@ -92,7 +92,7 @@ jobs:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
-            script-path: "${{ GITHUB.WORKSPACE }}\\Artifact\\D_${{ env.SCRIPT_FILENAME }}"
+            script-path: "D_${{ env.SCRIPT_FILENAME }}"
             skip-drift-check: false
             skip-deployment-report-upload: true
             deployment-report-name: "flyway-deploy-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
