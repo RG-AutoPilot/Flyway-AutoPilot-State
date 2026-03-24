@@ -93,7 +93,7 @@ jobs:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
-            script-path: "D_${{ env.SCRIPT_FILENAME }}"
+            script-path: "D_${{ env.SCRIPT_FILENAME }}.sql"
             skip-drift-check: false
             skip-deployment-report-upload: true
             deployment-report-name: "flyway-deploy-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
