@@ -49,7 +49,7 @@ jobs:
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       SCRIPT_FILENAME: "Flyway-AutoPilotBuild-AutoDeploymentScript"
-      REPORT_FILENAME: "Flyway-AutopilotTest-Report"
+      REPORT_FILENAME: "Flyway-AutoPilotBuild-Report"
       EXECUTE_BUILD: 'true' # Turn to false to skip the build stage tasks
     
     steps:
