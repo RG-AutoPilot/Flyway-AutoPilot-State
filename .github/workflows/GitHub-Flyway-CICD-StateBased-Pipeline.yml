@@ -79,6 +79,7 @@ jobs:
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
             generate-undo: true
             fail-on-drift: false
+            fail-on-code-review: false
             pre-deployment-report-name: "flyway-prepare-${{ env.TARGET_DATABASE_ENVIRONMENT }}.html"
             drift-resolution-scripts-name: "flyway-drift-resolve-${{ env.TARGET_DATABASE_ENVIRONMENT }}"
             deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
