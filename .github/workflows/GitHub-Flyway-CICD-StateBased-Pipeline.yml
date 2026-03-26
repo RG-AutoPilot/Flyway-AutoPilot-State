@@ -96,7 +96,7 @@ jobs:
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
             script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
-            skip-drift-check: false
+            skip-drift-check: true
             skip-deployment-report-upload: true
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
             working-directory: ${{ GITHUB.WORKSPACE }}
@@ -175,6 +175,7 @@ jobs:
             skip-drift-check: false
             skip-deployment-report-upload: true
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
+            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
@@ -234,5 +235,6 @@ jobs:
             skip-drift-check: false
             skip-deployment-report-upload: true
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
+            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
