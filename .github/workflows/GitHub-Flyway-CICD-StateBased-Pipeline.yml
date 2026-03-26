@@ -158,6 +158,8 @@ jobs:
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
             generate-undo: true
+            skip-deployment-changes-report: false
+            skip-code-review: false
             fail-on-drift: false
             fail-on-code-review: false
             pre-deployment-report-name: "${{ env.REPORT_FILENAME }}-PreDeployment"
@@ -218,6 +220,8 @@ jobs:
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
             generate-undo: true
+            skip-deployment-changes-report: false
+            skip-code-review: false
             fail-on-drift: false
             fail-on-code-review: false
             pre-deployment-report-name: "${{ env.REPORT_FILENAME }}-PreDeployment"
