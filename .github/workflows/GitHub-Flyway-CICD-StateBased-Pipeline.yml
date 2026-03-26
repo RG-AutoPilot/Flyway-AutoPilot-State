@@ -67,11 +67,11 @@ jobs:
           token: ${{ secrets.FLYWAY_TOKEN }}
           i-agree-to-the-eula: true
 
-    # # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
-    #   - name: Clean Build DB
-    #     if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
-    #     run: |
-    #       flyway info clean info -environment="${{ env.TARGET_DATABASE_ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -cleanDisabled='false' "-environments.${{ env.TARGET_DATABASE_ENVIRONMENT }}.provisioner=clean" ${{ secrets.CUSTOM_PARAMS }}
+    # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
+      - name: Clean Build DB
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
+        run: |
+          flyway info clean info -environment="${{ env.TARGET_DATABASE_ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -cleanDisabled='false' "-environments.${{ env.TARGET_DATABASE_ENVIRONMENT }}.provisioner=clean" ${{ secrets.CUSTOM_PARAMS }}
 
     # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
       - uses: red-gate/flyway-actions/state/prepare@v2
@@ -87,7 +87,7 @@ jobs:
             deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
             undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
             working-directory: ${{ GITHUB.WORKSPACE }}
-            extra-args: "${{ secrets.CUSTOM_PARAMS }} -provisionMode=reprovision -environment=${{ env.TARGET_DATABASE_ENVIRONMENT }}"
+            extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
       # Step 3 - Deploy: Apply the prepared deployment script to the target database    
       - uses: red-gate/flyway-actions/state/deploy@v2
