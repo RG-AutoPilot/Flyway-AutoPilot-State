@@ -99,7 +99,7 @@ jobs:
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
             script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
             skip-drift-check: true
-            skip-deployment-report-upload: true
+            skip-deployment-report-upload: false
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
