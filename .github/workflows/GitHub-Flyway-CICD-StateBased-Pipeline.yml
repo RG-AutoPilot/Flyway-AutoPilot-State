@@ -87,7 +87,7 @@ jobs:
             deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
             undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
             working-directory: ${{ GITHUB.WORKSPACE }}
-            extra-args: "${{ secrets.CUSTOM_PARAMS }} -provisionMode=reprovision"
+            extra-args: "${{ secrets.CUSTOM_PARAMS }} -provisionMode=reprovision -environment=${{ env.TARGET_DATABASE_ENVIRONMENT }}"
 
       # Step 3 - Deploy: Apply the prepared deployment script to the target database    
       - uses: red-gate/flyway-actions/state/deploy@v2
