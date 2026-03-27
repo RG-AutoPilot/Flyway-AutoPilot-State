@@ -74,7 +74,9 @@ jobs:
           flyway info clean info -environment="${{ env.TARGET_DATABASE_ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -cleanDisabled='false' "-environments.${{ env.TARGET_DATABASE_ENVIRONMENT }}.provisioner=clean" ${{ secrets.CUSTOM_PARAMS }}
 
     # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
-      - uses: red-gate/flyway-actions/state/prepare@v2
+      - name: Prepare Deployment Script
+        id: prepare
+        uses: red-gate/flyway-actions/state/prepare@v2
         with:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
@@ -91,13 +93,15 @@ jobs:
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
-      # Step 3 - Deploy: Apply the prepared deployment script to the target database    
-      - uses: red-gate/flyway-actions/state/deploy@v2
+      # Step 4 - Deploy: Apply the prepared deployment script to the target database    
+      - name: Deploy Deployment Script
+        id: deploy
+        uses: red-gate/flyway-actions/state/deploy@v2
         with:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
-            script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
+            script-path: "${{ steps.prepare.outputs.script-path }}" # Consumes the 'script-path' output from the 'prepare' step above
             skip-drift-check: true
             skip-deployment-report-upload: false
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
@@ -151,8 +155,10 @@ jobs:
           token: ${{ secrets.FLYWAY_TOKEN }}
           i-agree-to-the-eula: true
 
-       # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
-      - uses: red-gate/flyway-actions/state/prepare@v2
+    # Step 2 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
+      - name: Prepare Deployment Script
+        id: prepare
+        uses: red-gate/flyway-actions/state/prepare@v2
         with:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
@@ -170,16 +176,17 @@ jobs:
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
       # Step 3 - Deploy: Apply the prepared deployment script to the target database    
-      - uses: red-gate/flyway-actions/state/deploy@v2
+      - name: Deploy Deployment Script
+        id: deploy
+        uses: red-gate/flyway-actions/state/deploy@v2
         with:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
-            script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
+            script-path: "${{ steps.prepare.outputs.script-path }}" # Consumes the 'script-path' output from the 'prepare' step above
             skip-drift-check: false
-            skip-deployment-report-upload: true
+            skip-deployment-report-upload: false
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
-            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
@@ -213,8 +220,10 @@ jobs:
           token: ${{ secrets.FLYWAY_TOKEN }}
           i-agree-to-the-eula: true
 
-       # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
-      - uses: red-gate/flyway-actions/state/prepare@v2
+      # Step 2 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
+      - name: Prepare Deployment Script
+        id: prepare
+        uses: red-gate/flyway-actions/state/prepare@v2
         with:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
@@ -232,15 +241,16 @@ jobs:
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
       # Step 3 - Deploy: Apply the prepared deployment script to the target database    
-      - uses: red-gate/flyway-actions/state/deploy@v2
+      - name: Deploy Deployment Script
+        id: deploy
+        uses: red-gate/flyway-actions/state/deploy@v2
         with:
             target-environment: ${{ env.TARGET_DATABASE_ENVIRONMENT }}
             target-user: ${{ secrets.TARGET_DATABASE_USERNAME }}
             target-password: ${{ secrets.TARGET_DATABASE_PASSWORD }}
-            script-path: "./deployments/D_${{ env.SCRIPT_FILENAME }}.sql"
+            script-path: "${{ steps.prepare.outputs.script-path }}" # Consumes the 'script-path' output from the 'prepare' step above
             skip-drift-check: false
-            skip-deployment-report-upload: true
+            skip-deployment-report-upload: false
             deployment-report-name: "${{ env.REPORT_FILENAME }}-Deployment"
-            drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
