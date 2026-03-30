@@ -67,11 +67,11 @@ jobs:
           token: ${{ secrets.FLYWAY_TOKEN }}
           i-agree-to-the-eula: true
 
-    # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
-      - name: Clean Build DB
-        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
-        run: |
-          flyway info clean info -environment="${{ env.TARGET_DATABASE_ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -cleanDisabled='false' "-environments.${{ env.TARGET_DATABASE_ENVIRONMENT }}.provisioner=clean" ${{ secrets.CUSTOM_PARAMS }}
+    # # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
+    #   - name: Clean Build DB
+    #     if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
+    #     run: |
+    #       flyway info clean info -environment="${{ env.TARGET_DATABASE_ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -cleanDisabled='false' "-environments.${{ env.TARGET_DATABASE_ENVIRONMENT }}.provisioner=clean" ${{ secrets.CUSTOM_PARAMS }}
 
     # Step 3 - Prepare: Detect differences between source and target and generate a migration script to move the target in line with the source.
       - name: Prepare Deployment Script
@@ -90,6 +90,7 @@ jobs:
             drift-resolution-scripts-name: "${{ env.REPORT_FILENAME }}-DriftResolution"
             deployment-script-name: "D_${{ env.SCRIPT_FILENAME }}"
             undo-script-name: "U_${{ env.SCRIPT_FILENAME }}"
+            provision-mode: "reprovision" # This will drop and recreate the target database schema as part of the prepare step. Only use for throwaway environments
             working-directory: ${{ GITHUB.WORKSPACE }}
             extra-args: "${{ secrets.CUSTOM_PARAMS }}"
 
